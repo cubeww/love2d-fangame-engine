@@ -1,4 +1,6 @@
+-- color.lua
 -- color constants
+
 Color = {
     white = { 255, 255, 255 },
     black = { 0, 0, 0 },

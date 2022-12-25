@@ -1,3 +1,6 @@
+-- room.lua
+-- in-game room resource.
+
 Room = {}
 
 Rooms = {}
@@ -40,6 +43,9 @@ function Room:enter(roomName)
             inst:destroy()
         end
     end
+
+    -- clean ordered instance pool
+    OrderedInstPool:clearRemoved()
 
     -- change current room
     CurrentRoom = roomName

@@ -1,3 +1,7 @@
+-- collision.lua
+-- all methods related to collision detection.
+
+-- it might be faster to make the math function a local variable? idk...
 local sin = math.sin
 local cos = math.cos
 local floor = math.floor
@@ -107,13 +111,13 @@ function Inst:computeBoundingBox()
         return
     end
 
-    local mask = self:getCurrentMask()
-    if mask == None then
+    local mask = self.maskTarget
+    if not mask then
         return
     end
 
     -- get the local bounding box of frame
-    local lbbox = mask:getFrame(self.sprite.index).bbox
+    local lbbox = mask:getFrame(self.frameIndex).bbox
 
     self.transform:prepare(lbbox.origin.x, lbbox.origin.y)
 
@@ -174,8 +178,8 @@ function Inst:placeMeeting(objectName, x, y)
     x = x or self.x
     y = y or self.y
 
-    local mask = self:getCurrentMask()
-    if mask == None then
+    local mask = self.maskTarget
+    if not mask then
         return false
     end
 
@@ -187,10 +191,10 @@ function Inst:placeMeeting(objectName, x, y)
     self:computeBoundingBox()
 
     local flag = false
-    for _, inst in ipairs(obj.addlPool) do
+    for _, inst in ipairs(obj._recursiveInstPool) do
         if inst ~= self then
-            local imask = inst:getCurrentMask()
-            if imask ~= None then
+            local imask = inst.maskTarget
+            if imask then
                 inst:computeBoundingBox()
 
                 if preciseCollision(self, inst) then

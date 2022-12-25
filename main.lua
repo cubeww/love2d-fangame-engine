@@ -42,12 +42,12 @@ end
 function love.update(dt)
     nextTime = nextTime + (1 / RoomSpeed) -- RoomSpeed is defined in 'game.lua'
 
-    InstPool:update()
+    OrderedInstPool:update()
 end
 
 function love.draw()
-    InstPool:draw()
-    InstPool:clean()
+    OrderedInstPool:draw()
+    OrderedInstPool:clearRemoved()
 
     -- cap fps
     local curTime = love.timer.getTime()

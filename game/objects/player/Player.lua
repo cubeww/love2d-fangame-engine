@@ -11,14 +11,17 @@ function Player:create()
     self.jump = 8.5
     self.jump2 = 7
 
-    self.gravity = 0.4
+    -- self.gravity = 0.4
     self.djump = 1
     self.maxSpeed = 3
     self.maxVspeed = 9
 
-    self.sprite.speed = 0.2
+    self.frameSpeed = 0.2
     self.onPlatform = false
     self.xScale = 1
+
+    self.hspeed=1
+
 end
 
 function Player:update()
@@ -33,10 +36,6 @@ function Player:update()
     end
     if love.keyboard.isDown('right') then
         self.x = self.x + 1
-    end
-
-    for i = 1, 40000, 1 do
-        self:placeMeeting('SpikeUp')
     end
     
 end

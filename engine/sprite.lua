@@ -1,3 +1,6 @@
+-- sprite.lua
+-- the object/instance holds the sprite.
+
 Sprite = {}
 
 Sprites = {}

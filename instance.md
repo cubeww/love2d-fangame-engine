@@ -1,0 +1,24 @@
+# Instance成员
+
+- 由transform管理，代理到根路径：
+  - x
+  - y
+  - xscale
+  - yscale
+  - angle
+- spriteName：精灵名称，None表示空白
+- spriteTarget
+  - get：从精灵获取精灵对象，nil表示空白
+- frameIndex：子图的索引号
+- maskName：碰撞精灵名称，Same表示与精灵相同，None表示空白
+- maskTarget
+  - get：从mask名称获取精灵对象，nil表示空白
+- objectName：当前对象名称
+- hspeed，vspeed
+  - get：获取hspeed值
+  - set：设定hspeed值，同时触发speed和direction更新
+- speed,direction
+  - get：获取
+  - set：赋值，同时触发hspeed和vspeed更新
+- gravity：重力值
+- gravityDirection：重力方向
