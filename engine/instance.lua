@@ -1,7 +1,7 @@
 -- instance.lua
 -- game object instance & instance Pool definitions and core methods.
 
--- instance = object metatable (visible, sprite, create()...) - object specific methods (extends, props...)
+-- instance = object metatable (visible, sprite, onCreate()...) - object specific methods (extends, props...)
 -- + instance fields (_speed, _frameIndex...) + instance properties (speed, direction...) + instance methods (placeMeeting...)
 Inst = {}
 
@@ -102,7 +102,7 @@ local instProps = {
         end,
         set = function(inst, v)
             inst._depth = v
-            OrderedInstPool.reorder = true
+            OrderedInstPool.shouldSortDepth = true
         end
     },
     spriteName = {
@@ -240,7 +240,7 @@ function Inst:new(objectName, x, y)
         lbbox = nil,
     }
 
-    inst._removed = false
+    inst._shouldRemove = false
 
     -- since object has some properties that instance does not have,
     -- we need to remove them when instantiating.
@@ -260,24 +260,41 @@ function Inst:new(objectName, x, y)
     -- insert to ordered instance pool
     OrderedInstPool:insertInst(inst)
 
-    -- insert to object instance pool
-    -- TODO
-    -- table.insert(obj._instPool, inst)
+    -- append to object instance pool
+    local o = inst._super
+    o._instPool:appendInst(inst)
+    while o do
+        o._recursiveInstPool:appendInst(inst)
+        o = o._super
+    end
 
-    -- execute create method
-    if inst.create then
-        inst:create()
+    -- execute onCreate method
+    if inst.onCreate then
+        inst:onCreate()
     end
 
     return inst
 end
 
--- mark the instance as "removed"
+-- mark the instance as should removed, and call the onDestroy method
 function Inst:destroy()
-    self._removed = true
+    self._shouldRemove = true
 
-    if self.destroyed then
-        self:destroyed()
+    if self.onDestroy then
+        self:onDestroy()
+    end
+end
+
+-- remove the instance from all instance pools
+function Inst:removeFromPools()
+    OrderedInstPool:removeInst(self)
+    
+    local o = self._super
+    o._instPool:removeInst(self)
+
+    while o do
+        o._recursiveInstPool:removeInst(self)
+        o = o._super
     end
 end
 
@@ -296,31 +313,30 @@ end
 
 -- ******************* ordered instance pool *******************
 OrderedInstPool = InstPool:new()
-OrderedInstPool.reorder = false
+OrderedInstPool.shouldSortDepth = false
 
 function OrderedInstPool:update()
     OrderedInstPool:traverseInst(function(inst)
-        if not inst._removed then
-            if inst.update then
-                inst:update()
+        if not inst._shouldRemove then
+            if inst.onUpdate then
+                inst:onUpdate()
             end
 
-            inst:handleMovement()
+            inst:updatePosition()
             inst:updateFrameIndex()
         end
     end)
 end
 
 function OrderedInstPool:draw()
-    if OrderedInstPool.reorder then
+    if OrderedInstPool.shouldSortDepth then
         OrderedInstPool:sortDepth()
     end
 
-
     OrderedInstPool:traverseInst(function(inst)
-        if not inst._removed then
-            if inst.draw then
-                inst:draw()
+        if not inst._shouldRemove then
+            if inst.onDraw then
+                inst:onDraw()
             else
                 inst:drawSelf()
             end

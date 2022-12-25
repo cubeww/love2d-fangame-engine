@@ -6,7 +6,7 @@ World:props({
     depth = 10001,
 })
 
-function World:create()
+function World:onCreate()
     -- init globals
     love.window.setMode(800, 608)
     love.window.setTitle('I wanna play in Love2D!!!')
@@ -19,10 +19,10 @@ function World:create()
     
 end
 
-function World:update()
+function World:onUpdate()
 
 end
 
-function World:draw()
+function World:onDraw()
 
 end

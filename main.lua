@@ -33,29 +33,13 @@ function love.load()
     -- 3. game modules
     requireAll('game')
 
-    -- go to start room (defined in 'game.lua')
-    Room:enter(StartRoom)
-
-    nextTime = love.timer.getTime()
+    Game:_load()
 end
 
 function love.update(dt)
-    nextTime = nextTime + (1 / RoomSpeed) -- RoomSpeed is defined in 'game.lua'
-
-    OrderedInstPool:update()
+    Game:_update(dt)
 end
 
 function love.draw()
-    OrderedInstPool:draw()
-    OrderedInstPool:clearRemoved()
-
-    -- cap fps
-    local curTime = love.timer.getTime()
-    if nextTime <= curTime then
-        nextTime = curTime
-    end
-    love.timer.sleep(nextTime - curTime)
-
-    love.graphics.print('FPS: '..tostring(love.timer.getFPS()))
-
+    Game:_draw()
 end

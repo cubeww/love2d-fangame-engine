@@ -6,6 +6,8 @@ Room = {}
 Rooms = {}
 
 CurrentRoom = nil
+NewRoom = nil
+
 
 function Room:extends(name)
     local room = {
@@ -32,31 +34,4 @@ end
 
 function Room:setTiles(tiles)
     self.tiles = tiles
-end
-
-function Room:enter(roomName)
-    local room = Rooms[roomName]
-
-    -- destroy old instances
-    for _, inst in ipairs(InstPool) do
-        if not inst.persistent then
-            inst:destroy()
-        end
-    end
-
-    -- clean ordered instance pool
-    OrderedInstPool:clearRemoved()
-
-    -- change current room
-    CurrentRoom = roomName
-    
-    -- create new instances
-    for _, i in ipairs(room.instances) do
-        local inst = Inst:new(i.object, i.x, i.y)
-
-        -- execute creation function
-        if i.create then
-            i.create(inst)
-        end
-    end
 end

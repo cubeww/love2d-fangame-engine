@@ -190,21 +190,22 @@ function Inst:placeMeeting(objectName, x, y)
 
     self:computeBoundingBox()
 
-    local flag = false
-    for _, inst in ipairs(obj._recursiveInstPool) do
+    local result = false
+
+    obj._recursiveInstPool:traverseInst(function(inst)
         if inst ~= self then
             local imask = inst.maskTarget
             if imask then
                 inst:computeBoundingBox()
 
                 if preciseCollision(self, inst) then
-                    flag = true
-                    break
+                    result = inst
+                    return
                 end
             end
         end
-    end
+    end)
 
     self.x, self.y = oldX, oldY
-    return flag
+    return result
 end

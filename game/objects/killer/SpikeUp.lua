@@ -5,6 +5,6 @@ SpikeUp:props({
 })
 
 
-function SpikeUp:update()
+function SpikeUp:onUpdate()
     
 end

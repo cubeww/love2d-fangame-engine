@@ -25,8 +25,8 @@ function Object:extends(name, superName)
 
     -- specifically, each object contains an additional instance pool and recursive instance pool 
     -- for convenience in some methods.
-    obj._instPool = {}
-    obj._recursiveInstPool = {}
+    obj._instPool = InstPool:new()
+    obj._recursiveInstPool = InstPool:new()
 
     -- inherits from its super class
     if superName then

@@ -7,7 +7,7 @@ Player:props({
     persistent = true,
 })
 
-function Player:create()
+function Player:onCreate()
     self.jump = 8.5
     self.jump2 = 7
 
@@ -24,7 +24,7 @@ function Player:create()
 
 end
 
-function Player:update()
+function Player:onUpdate()
     if love.keyboard.isDown('down') then
         self.y = self.y + 1
     end
@@ -40,6 +40,6 @@ function Player:update()
     
 end
 
-function Player:draw()
+function Player:onDraw()
     self:drawSelf()
 end

@@ -47,7 +47,7 @@ function Inst:computeHVSpeed()
     end
 end
 
-function Inst:handleMovement()
+function Inst:updatePosition()
     if self.friction ~= 0 then
         local newSpeed
 

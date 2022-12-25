@@ -1,5 +1,6 @@
 -- init.lua
 -- require all engine modules
+require 'engine.game'
 require 'engine.color'
 require 'engine.sprite'
 require 'engine.object'

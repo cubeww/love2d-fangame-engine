@@ -114,7 +114,7 @@ function InstPool:clearRemoved()
     local node = self.head
     while node do
         local next = node.next
-        if node.inst._removed then
+        if node.inst._shouldRemove then
             self:removeNode(node)
         end
         node = next
