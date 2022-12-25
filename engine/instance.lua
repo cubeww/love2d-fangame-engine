@@ -2,6 +2,30 @@
 --  + instance properties (speed, direction...) + instance methods (placeMeeting...)
 Inst = {}
 
+-- the transform of instance
+Transform = {
+    x = 0,
+    y = 0,
+    xscale = 1,
+    yscale = 1,
+    angle = 0,
+
+    -- the following properties are used for collision detection
+    xo = 0,
+    yo = 0,
+    rxs = 1,
+    rys = 1,
+    st = 0,
+    ct = 1,
+}
+
+function Transform:new(x, y)
+    return setmetatable({
+        x = x or 0,
+        y = y or 0,
+    }, { __index = self })
+end
+
 -- speed getter & setter
 local function speedGetter(t, k)
     if k == 'h' then
@@ -27,10 +51,29 @@ local function speedSetter(t, k, v)
     end
 end
 
+-- instance getter & setter
+local function instGetter(t, k)
+    if k == 'x' or k == 'y' or k == 'xscale' or k == 'yscale' or k == 'angle' then
+        -- mount the properties of transform to the instance for user convenience
+        return t.transform[k]
+    else
+        return t.object.target[k]
+    end
+end
+
+local function instSetter(t, k, v)
+    if k == 'x' or k == 'y' or k == 'xscale' or k == 'yscale' or k == 'angle' then
+        t.transform[k] = v
+        t.bbox.dirty = true
+    else
+        rawset(t, k, v)
+    end
+end
+
 -- create an new instance of object
 function Inst:new(objectName, x, y)
     local obj = Objects[objectName]
-    local inst = setmetatable({}, { __index = obj })
+    local inst = setmetatable({}, { __index = instGetter, __newindex = instSetter })
 
     inst.object = {
         name = objectName,
@@ -38,17 +81,7 @@ function Inst:new(objectName, x, y)
     }
 
     -- instance properties
-
-    -- transform
-    inst.x = x or 0
-    inst.y = y or 0
-
-    inst.scale = {
-        x = 1,
-        y = 1,
-    }
-
-    inst.angle = 0
+    inst.transform = Transform:new(x, y)
 
     inst.sprite = {
         name = obj.spriteName, -- eq: sprite_index
@@ -82,10 +115,12 @@ function Inst:new(objectName, x, y)
 
     -- bounding box
     inst.bbox = {
+        dirty = true,
         left = nil,
         right = nil,
         top = nil,
         bottom = nil,
+        lbbox = nil,
     }
 
     inst.removed = false

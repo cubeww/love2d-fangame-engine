@@ -35,7 +35,10 @@ function Player:update()
         self.x = self.x + 1
     end
 
-    print(self:placeMeeting('SpikeUp', self.x, self.y))
+    for i = 1, 40000, 1 do
+        self:placeMeeting('SpikeUp')
+    end
+    
 end
 
 function Player:draw()

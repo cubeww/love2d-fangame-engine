@@ -21,6 +21,7 @@ function requireAll(folder, exclude)
 end
 
 function love.load()
+    love.filesystem.setIdentity('scripts')
     -- load modules
     
     -- 1. third party libraries
@@ -45,8 +46,6 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.print('FPS: '..tostring(love.timer.getFPS()))
-
     InstPool:draw()
     InstPool:clean()
 
@@ -56,4 +55,7 @@ function love.draw()
         nextTime = curTime
     end
     love.timer.sleep(nextTime - curTime)
+
+    love.graphics.print('FPS: '..tostring(love.timer.getFPS()))
+
 end
