@@ -95,7 +95,9 @@ function Game:_draw()
 
     -- draw instances
     OrderedInstancePool:draw()
-    OrderedInstancePool:cleanRemoved()
+
+    -- clear removed instances form pools
+    OrderedInstancePool:clearRemoved()
 
     -- move background
     self.backgroundX = self.backgroundX + (bg.hspeed or 0)

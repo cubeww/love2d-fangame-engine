@@ -1,21 +1,15 @@
 -- instancepool.lua
 
 -- ******************** Ordered Instance Pool ********************
--- global instance pool. mainly used for executing instance callback functions, 
+-- global instance pool. mainly used for executing instance callback functions,
 -- such as onUpdate, onDraw, etc.
 
 
 OrderedInstancePool = {
     pool = {},
-    sortPool = {},
+    sortPool = {}
 }
-
-function OrderedInstancePool.new()
-    local self = { pool = {} }
-    setmetatable(self, OrderedInstancePool)
-    return self
-end
-
+-- use binary search algorithm to quickly insert instance into the correct depth index
 function OrderedInstancePool:insert(inst)
     local left = 1
     local right = #self.pool
@@ -31,7 +25,8 @@ function OrderedInstancePool:insert(inst)
     table.insert(self.pool, left, inst)
 end
 
-function OrderedInstancePool:cleanRemoved()
+-- generally called at the end of a game frame
+function OrderedInstancePool:clearRemoved()
     for i = #self.pool, 1, -1 do
         local inst = self.pool[i]
         if inst._shouldRemove then
@@ -41,6 +36,7 @@ function OrderedInstancePool:cleanRemoved()
     end
 end
 
+-- generally called when switching rooms
 function OrderedInstancePool:destroyAndRemoveAll()
     for i = #self.pool, 1, -1 do
         local inst = self.pool[i]
@@ -52,6 +48,7 @@ function OrderedInstancePool:destroyAndRemoveAll()
     end
 end
 
+-- only remove the instance from this instance pool without performing any other things
 function OrderedInstancePool:remove(inst)
     for i, v in ipairs(inst) do
         if inst == v then
@@ -60,10 +57,12 @@ function OrderedInstancePool:remove(inst)
     end
 end
 
+-- called when the instance depth value changes
 function OrderedInstancePool:pushSort(inst)
     table.insert(self.sortPool, inst)
 end
 
+-- called before drawing
 function OrderedInstancePool:sortDepth()
     local inst = table.remove(self.sortPool)
     while inst do
@@ -102,12 +101,14 @@ function OrderedInstancePool:draw()
     end
 end
 
-
 -- ******************** Instance Pool ********************
--- instance pool held by each object. 
+-- instance pool held by each object.
 -- mainly used for collision detection and traversing instances of a certain type of object.
 
-InstancePool = { pool = {}, stack = {} }
+InstancePool = {
+    pool = {},
+    stack = {}
+}
 
 function InstancePool:append(inst)
     local i = table.remove(self.stack)
