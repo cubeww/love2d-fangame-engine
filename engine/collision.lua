@@ -105,7 +105,7 @@ function Transform:inversePoint(x, y)
 end
 
 -- computes the bounding box of the instance and stores the transform state into the given transform.
-function Inst:computeBoundingBox()
+function Instance:computeBoundingBox()
     -- only recalculate the collision box when the bounding box is dirty (transform is modified)
     if not self.bbox.dirty then
         return
@@ -174,7 +174,7 @@ local function preciseCollision(inst1, inst2)
     return false
 end
 
-function Inst:placeMeeting(objectName, x, y)
+function Instance:placeMeeting(objectName, x, y)
     x = x or self.x
     y = y or self.y
 
@@ -192,7 +192,7 @@ function Inst:placeMeeting(objectName, x, y)
 
     local result = false
 
-    obj._recursiveInstPool:traverseInst(function(inst)
+    obj.recursiveInstancePool:traverseInstance(function(inst)
         if inst ~= self then
             local imask = inst.maskTarget
             if imask then

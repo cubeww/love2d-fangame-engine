@@ -1,28 +1,37 @@
-local World = Object:extends('World')
+Object.extends('World', function(self)
+    -- instance properties
+    self.visible = false
+    self.depth = 10001
+    self.spriteName = None
 
-World:props({
-    -- object properties
-    visible = false,
-    depth = 10001,
-})
+    -- private variables
+    local time = 0
+    local deaths = 0
 
-function World:onCreate()
-    -- init globals
-    love.window.setMode(800, 608)
-    love.window.setTitle('I wanna play in Love2D!!!')
+    -- public variables
+    self.infjump = 0
+    self.godmode = 0
 
-    -- Room:enter('rTitle')
+    -- private methods
+    local function addDeaths(v)
+        deaths = deaths + 1
+    end
 
-    -- for i = 1, 5000, 1 do
-    --     Inst:new('Player',math.random()*800,math.random()*608)
-    -- end
-    
-end
+    -- public methods
+    function self:quitGame()
+        print('不好意思，提前退出游戏会有惩罚的哦')
+    end
 
-function World:onUpdate()
+    -- lifecycle hooks
+    function self:onCreate()
+        love.window.setTitle('I wanna play in Love2D!!!')
+    end
 
-end
+    function self:onUpdate()
+        addDeaths()
+    end
 
-function World:onDraw()
-
-end
+    function self:onDraw()
+        self:drawSelf()
+    end
+end)

@@ -1,1 +1,0 @@
-local PlayerKiller = Object:extends('PlayerKiller')

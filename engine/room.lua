@@ -5,33 +5,43 @@ Room = {}
 
 Rooms = {}
 
-CurrentRoom = nil
-NewRoom = nil
+function Room.new(roomName, contents)
+    local self = contents
+    setmetatable(self, { __index = Room })
 
+    self.name = roomName
+    self.size = self.size or { 800, 608 }
+    self.background = self.background or {}
+    self.instances = self.instances or {}
+    self.tiles = self.tiles or {}
 
-function Room:extends(name)
-    local room = {
-        settings = {},
-        instances = {},
-        tiles = {},
-    }
+    Rooms[roomName] = self
 
-    setmetatable(room, { __index = self })
-    room[name] = name
-
-    Rooms[name] = room
-
-    return room
+    return self
 end
 
-function Room:setSettings(settings)
-    self.width, self.height = settings.size[1], settings.size[2]
+-- call this after all sprites are loaded
+function Room:makeBackgroundImage()
+    if not self.background.sprite then
+        return
+    end
+
+    local loveImage = Sprites[self.background.sprite]:getFrame(0).loveImage
+    loveImage:setWrap('repeat', 'repeat')
+    self.background.loveImage = loveImage
+
+    local w, h = loveImage:getWidth(), loveImage:getHeight()
+    self.background.width, self.background.height = w, h
+
+    self.background.mode = self.background.mode or 'tile'
+
+    if self.background.mode == 'tile' then
+        self.background.loveQuad = love.graphics.newQuad(0, 0,
+            (math.floor(Game.displayWidth / w) + 2) * w,
+            (math.floor(Game.displayHeight / h) + 2) * h,
+            w, h)
+    else
+        -- stretch mode uses scale, no need to create additional quad
+    end
 end
 
-function Room:setInstances(instances)
-    self.instances = instances
-end
-
-function Room:setTiles(tiles)
-    self.tiles = tiles
-end

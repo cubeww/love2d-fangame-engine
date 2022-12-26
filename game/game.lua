@@ -1,4 +1,6 @@
 -- define some game properties
 
-Game.startRoom = 'rInit'
+Game.startRoomName = 'rInit'
 Game.roomSpeed = 50
+Game.displayWidth = 800
+Game.displayHeight = 608

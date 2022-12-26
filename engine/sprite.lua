@@ -1,21 +1,16 @@
 -- sprite.lua
--- the object/instance holds the sprite.
+-- the sprite of object.
 
 Sprite = {}
 
 Sprites = {}
 
+function Sprite.new(name, settings)
+    local self = setmetatable({}, { __index = Sprite })
 
-function Sprite:extends(name)
-    local spr = setmetatable({}, { __index = self })
+    self.name = name
+    Sprites[name] = self
 
-    spr.name = name
-    Sprites[name] = spr
-
-    return spr
-end
-
-function Sprite:load(settings)
     settings = settings or {}
     -- load sprite with settings
     if not settings.mode or settings.mode == 'sheet' then
@@ -32,10 +27,10 @@ function Sprite:load(settings)
         local filename = nil
 
         -- search for image files with the same name
-        if love.filesystem.getInfo(LoadingDir .. '/' .. self.name .. '.png') then
-            filename = LoadingDir .. '/' .. self.name .. '.png'
-        elseif love.filesystem.getInfo(LoadingDir .. '/' .. self.name .. '.jpg') then
-            filename = LoadingDir .. '/' .. self.name .. '.jpg'
+        if love.filesystem.getInfo(Game._loadingDir .. '/' .. self.name .. '.png') then
+            filename = Game._loadingDir .. '/' .. self.name .. '.png'
+        elseif love.filesystem.getInfo(Game._loadingDir .. '/' .. self.name .. '.jpg') then
+            filename = Game._loadingDir .. '/' .. self.name .. '.jpg'
         end
 
         -- load image file

@@ -1,9 +1,12 @@
 -- movement.lua
--- the movement method of the instance.
+-- the movement functions of the instance.
 -- some are derived from Gamemaker HTML5, for consistency with the classic engine.
 
+Movement = {}
+
+
 -- called when hspeed or vspeed is modified
-function Inst:computeSpeedDirection()
+function Instance:computeSpeedDirection()
     -- compute direction
     if self._hspeed == 0 then
         if self._vspeed > 0 then
@@ -34,7 +37,7 @@ function Inst:computeSpeedDirection()
 end
 
 -- called when speed or direction is modified
-function Inst:computeHVSpeed()
+function Instance:computeHVSpeed()
     self._hspeed = self._speed * math.cos(self._direction * 0.0174532925) -- 0.0174532925 <=> math.pi / 180
     self._vspeed = -self._speed * math.sin(self._direction * 0.0174532925)
 
@@ -47,7 +50,7 @@ function Inst:computeHVSpeed()
     end
 end
 
-function Inst:updatePosition()
+function Instance:updatePosition()
     if self.friction ~= 0 then
         local newSpeed
 
@@ -70,7 +73,7 @@ function Inst:updatePosition()
         -- apply gravity
         self._hspeed = self._hspeed + self.gravity * math.cos(self.gravityDirection * 0.0174532925)
         self._vspeed = self._vspeed - self.gravity * math.sin(self.gravityDirection * 0.0174532925)
-        self:computeSpeedDirection()
+        Movement.computeSpeedDirection(self)
     end
 
     -- update position

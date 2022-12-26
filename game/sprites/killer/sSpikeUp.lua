@@ -1,3 +1,1 @@
-local sSpikeUp = Sprite:extends('sSpikeUp')
-
-sSpikeUp:load()
+Sprite.new('sSpikeUp')

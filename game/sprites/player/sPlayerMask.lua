@@ -1,5 +1,3 @@
-local sPlayerMask = Sprite:extends('sPlayerMask')
-
-sPlayerMask:load({
-    origin = {17, 23},
+Sprite.new('sPlayerMask', {
+    origin = { 17, 23 },
 })
