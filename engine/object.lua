@@ -129,7 +129,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._depth = v
-            OrderedInstancePool.shouldSortDepth = true
+            OrderedInstancePool:pushSort(t)
         end
     },
     spriteName = {

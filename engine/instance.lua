@@ -10,13 +10,12 @@ function Instance.new(objectName, x, y)
         inst.y = y or 0
 
         -- append to instance pools
-        inst._orderedInstancePoolNode = OrderedInstancePool:insertInstance(inst) -- 1
+        OrderedInstancePool:insert(inst) -- 1
 
         local o = inst.objectTarget
-        inst._instancePoolNode = o.instancePool:appendInstance(inst) -- 2
-        inst._recursiveInstancePoolNode = {}
+        o.instancePool:append(inst) -- 2
         while o do
-            inst._recursiveInstancePoolNode[o] = o.recursiveInstancePool:appendInstance(inst) -- 3...
+            o.recursiveInstancePool:append(inst) -- 3...
             o = Objects[o.parentName]
         end
 
@@ -54,13 +53,11 @@ function Instance:destroy()
 end
 
 function Instance:removeFromPools()
-    OrderedInstancePool:removeNode(self._orderedInstancePoolNode) -- 1
-
     local o = self.objectTarget
-    o.instancePool:removeNode(self._instancePoolNode) -- 2
+    o.instancePool:remove(self)
 
     while o do
-        o.recursiveInstancePool:removeNode(self._recursiveInstancePoolNode[o]) -- 3...
+        o.recursiveInstancePool:remove(self)
         o = Objects[o.parentName]
     end
 end
