@@ -39,9 +39,9 @@ function Game:_load()
     -- load game scripts
     requireAll('game')
 
-    -- make room background image
+    -- build rooms
     for _, room in pairs(Rooms) do
-        room:makeBackgroundImage()
+        room:build()
     end
 
     -- initialize game properties
@@ -107,6 +107,9 @@ function Game:_draw()
         self._newRoomName = nil
     end
 
+    -- clear input states
+    Input:_clear()
+
     -- cap fps
     local curTime = love.timer.getTime()
     if nextTime <= curTime then
@@ -151,7 +154,10 @@ function Game:_changeRoom(roomName)
     end
 end
 
--- ******************** public methods ********************
+
+
+-- public methods
+
 function Game:gotoRoom(roomName)
     if not Rooms[roomName] then
         return

@@ -137,6 +137,9 @@ function OrderedInstancePool:draw()
         self:sortDepth()
     end
 
+    local tiles = Game.roomTarget.orderedTiles
+    
+
     self:traverseInstance(function(inst)
         if not inst._shouldRemove then
             if inst.onDraw then

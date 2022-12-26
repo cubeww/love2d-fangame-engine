@@ -28,7 +28,13 @@ Object.extends('World', function(self)
     end
 
     function self:onUpdate()
-        addDeaths()
+        if Input:pressed(1) then
+            print('lsp!')
+        end
+
+        if Input:released(1) then
+            print('lsr!')
+        end
     end
 
     function self:onDraw()
