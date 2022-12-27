@@ -1,45 +1,16 @@
--- local Player = Object:extends('Player')
+Object.extends('Player', function(self)
+    local jump = 8.5
+    local djump = 7
 
--- Player:props({
---     depth = -10,
---     sprite = 'sPlayerMask',
---     mask = Same,
---     persistent = true,
--- })
+    function self:onCreate()
 
--- function Player:onCreate()
---     self.jump = 8.5
---     self.jump2 = 7
+    end
 
---     -- self.gravity = 0.4
---     self.djump = 1
---     self.maxSpeed = 3
---     self.maxVspeed = 9
+    function self:onUpdate()
 
---     self.frameSpeed = 0.2
---     self.onPlatform = false
---     self.xScale = 1
+    end
 
---     self.hspeed=1
+    function self:onDraw()
 
--- end
-
--- function Player:onUpdate()
---     if love.keyboard.isDown('down') then
---         self.y = self.y + 1
---     end
---     if love.keyboard.isDown('up') then
---         self.y = self.y - 1
---     end
---     if love.keyboard.isDown('left') then
---         self.x = self.x - 1
---     end
---     if love.keyboard.isDown('right') then
---         self.x = self.x + 1
---     end
-    
--- end
-
--- function Player:onDraw()
---     self:drawSelf()
--- end
+    end
+end)

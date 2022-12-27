@@ -1,5 +1,5 @@
 -- color.lua
--- common color constants.
+-- Common color constants.
 
 Color = {
     white = { 255, 255, 255 },

@@ -1,5 +1,5 @@
 -- game.lua
--- control the game loop and encapsulate methods related to game management.
+-- Control the game loop and encapsulate methods related to game management.
 
 require('engine.color')
 require('engine.object')
@@ -10,10 +10,11 @@ require('engine.movement')
 require('engine.room')
 require('engine.sprite')
 require('engine.input')
+require('engine.sound')
 
 Game = {}
 
--- recursively require all lua files in the **game** directory
+-- Recursively require all lua files in the **game** directory
 local function requireAll(folder)
     for _, file in pairs(love.filesystem.getDirectoryItems(folder)) do
         local filePath = folder .. '/' .. file
@@ -32,20 +33,20 @@ end
 local nextTime
 
 function Game:_load()
-    -- record the currently loading lua file in order to make some loading.
+    -- Record the currently loading lua file in order to make some loading.
     self._loadingDir = ''
     self._loadingFile = ''
 
-    -- load game scripts
+    -- Load game scripts
     requireAll('game')
 
-    -- build rooms
+    -- Build rooms
     for _, room in pairs(Rooms) do
         room:build()
     end
 
-    -- initialize game properties
-    self._newRoomName = nil
+    -- Initialize game properties
+    self._newRoom = nil
 
     self.backgroundX = 0
     self.backgroundY = 0
@@ -53,8 +54,8 @@ function Game:_load()
     self.displayWidth = self.displayWidth or 800
     self.displayHeight = self.displayHeight or 608
 
-    -- go to start room (defined in 'game.lua')
-    self:_changeRoom(self.startRoomName)
+    -- Go to start room (defined in 'game.lua')
+    self:_changeRoom(Rooms[self.startRoomName])
 
     nextTime = love.timer.getTime()
 end
@@ -62,20 +63,27 @@ end
 function Game:_update(dt)
     nextTime = nextTime + (1 / self.roomSpeed) -- roomSpeed is defined in 'game.lua'
 
-    OrderedInstancePool:update()
+    for inst in OrderedInstancePool:iter() do
+        if inst.onUpdate then
+            inst:onUpdate()
+        end
+
+        inst:updatePosition()
+        inst:updateFrameIndex()
+    end
 end
 
 function Game:_draw()
-    local bg = self.roomTarget.background
+    local bg = self.room.background
 
-    -- draw room background color
+    -- Draw room background color
     if bg.color then
         love.graphics.setBackgroundColor({ bg.color[1] / 255, bg.color[2] / 255, bg.color[3] / 255 })
     else
         love.graphics.setBackgroundColor(Color.black)
     end
 
-    -- draw room background image
+    -- Draw room background image
     if bg.loveImage then
         if bg.mode == 'tile' then
             love.graphics.draw(bg.loveImage, bg.loveQuad,
@@ -93,26 +101,37 @@ function Game:_draw()
         end
     end
 
-    -- draw instances
-    OrderedInstancePool:draw()
+    -- Draw instances
+    OrderedInstancePool:sortDepth()
 
-    -- clear removed instances form pools
+    -- TODO: Draw tiles
+    for inst in OrderedInstancePool:iter() do
+        if inst.visible then
+            if inst.onDraw then
+                inst:onDraw()
+            else
+                inst:drawSelf()
+            end
+        end
+    end
+
+    -- Clear removed instances form pools
     OrderedInstancePool:clearRemoved()
 
-    -- move background
+    -- Move background
     self.backgroundX = self.backgroundX + (bg.hspeed or 0)
     self.backgroundY = self.backgroundY + (bg.vspeed or 0)
 
-    -- change room check
-    if self._newRoomName then
-        self:_changeRoom(self._newRoomName)
-        self._newRoomName = nil
+    -- Change room check
+    if self._newRoom then
+        self:_changeRoom(self._newRoom)
+        self._newRoom = nil
     end
 
-    -- clear input states
+    -- Clear input states
     Input:_clear()
 
-    -- cap fps
+    -- Limit frame rate
     local curTime = love.timer.getTime()
     if nextTime <= curTime then
         nextTime = curTime
@@ -122,48 +141,52 @@ function Game:_draw()
     love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()))
 end
 
-function Game:_changeRoom(roomName)
-    local room = Rooms[roomName]
+function Game:_changeRoom(room)
     if not room then
         return
     end
 
-    -- call onExit method of old room
-    if self.roomTarget and self.roomTarget.onExit then
-        self.roomTarget:onExit()
+    -- Call onExit method of old room
+    if self.room and self.room.onExit then
+        self.room:onExit()
     end
 
-    -- destroy old instances
+    -- Destroy old instances
     OrderedInstancePool:destroyAndRemoveAll()
 
-    -- change current room
-    self.roomName = roomName
-    self.roomTarget = room
+    -- Change current room
+    self.room = room
 
-    -- create new instances
+    -- Create new instances
     for _, i in ipairs(room.instances) do
-        local inst = Instance.new(i.object, i.x, i.y)
-
-        -- call additional onCreate method of instance
-        if i.onCreate then
-            i.onCreate(inst)
+        local inst = Objects[i.object]:new(i.x, i.y)
+        if inst then
+            -- Call additional onCreate method of instance (instance creation code)
+            if i.onCreate then
+                i.onCreate(inst)
+            end
         end
     end
 
-    -- call onEnter method of new room
-    if self.roomTarget.onEnter then
-        self.roomTarget:onEnter()
+    -- Call onEnter method of new room
+    if self.room.onEnter then
+        self.room:onEnter()
     end
 end
 
+-- Public methods
 
-
--- public methods
-
-function Game:gotoRoom(roomName)
-    if not Rooms[roomName] then
-        return
+function Game:gotoRoom(room)
+    if room then
+        self._newRoom = room
     end
+end
 
-    self._newRoomName = roomName
+function Game:restartRoom()
+    self._newRoom = self.room
+end
+
+function Game:restartGame()
+    require('game.game')
+    self._newRoom = Rooms[startRoomName]
 end

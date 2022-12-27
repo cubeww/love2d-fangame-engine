@@ -1,5 +1,5 @@
 -- room.lua
--- in-game room resource.
+-- Place object instances, tiles, background images...
 
 Room = {}
 
@@ -40,7 +40,7 @@ function Room:buildBackgroundImage()
             (math.floor(Game.displayHeight / h) + 2) * h,
             w, h)
     else
-        -- stretch mode uses scale, no need to create additional quad
+        -- Stretch mode uses scale, no need to create additional quad
     end
 end
 
@@ -77,12 +77,12 @@ function Room:buildTiles()
             .. ',' .. tostring(tileWidth) .. ',' .. tostring(tileHeight)
 
         if not tileQuads[key] then
-            -- generate a new quad for tile
+            -- Generate a new quad for tile
             local quad = love.graphics.newQuad(xo, yo, tileWidth, tileHeight, width, height)
             tile.loveQuad = quad
             tileQuads[key] = quad
         else
-            -- just get the exists one
+            -- Just get the exists one
             tile.loveQuad = tileQuads[key]
         end
     end
@@ -90,7 +90,7 @@ function Room:buildTiles()
     self.orderedTiles = orderedTiles
 end
 
--- call this after all sprites are loaded
+-- Call this after all sprites are loaded
 function Room:build()
     self:buildBackgroundImage()
     self:buildTiles()

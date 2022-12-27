@@ -1,9 +1,9 @@
 -- input.lua
--- collect the input state of the keyboard/mouse.
+-- Collect the input state of the keyboard/mouse.
 
--- supports both keyboard and mouse input. 
--- refer to https://love2d.org/wiki/KeyConstant for a list of keyboard keys.
--- integer 1=left mouse button, 2=right mouse button, 3=middle mouse button.
+-- Supports both keyboard and mouse input. 
+-- Refer to https://love2d.org/wiki/KeyConstant for a list of keyboard keys.
+-- Integer 1=left mouse button, 2=right mouse button, 3=middle mouse button.
 
 
 Input = {}
@@ -13,7 +13,7 @@ Input.heldKeys = {}
 Input.releasedKeys = {}
 
 
--- update methods
+-- Update methods
 
 function Input:_pressed(key)
     if not self.heldKeys[key] then
@@ -33,7 +33,7 @@ function Input:_clear()
 end
 
 
--- check methods
+-- Check methods
 
 function Input:pressed(key)
     return self.pressedKeys[key]

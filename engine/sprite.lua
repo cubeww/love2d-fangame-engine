@@ -1,5 +1,5 @@
 -- sprite.lua
--- the sprite of object.
+-- The sprite of object.
 
 Sprite = {}
 
@@ -12,46 +12,46 @@ function Sprite.new(name, settings)
     Sprites[name] = self
 
     settings = settings or {}
-    -- load sprite with settings
+    -- Load sprite with settings
     if not settings.mode or settings.mode == 'sheet' then
         local col = settings.col or 1
         local row = settings.row or 1
 
-        local bbox = settings.bbox
+        local bbox = settings.bbox or false
 
-        -- get the bounding box by default
+        -- Get the bounding box by default
         if bbox ~= false then
             bbox = true
         end
 
-        local filename = nil
+        local filename
 
-        -- search for image files with the same name
+        -- Search for image files with the same name
         if love.filesystem.getInfo(Game._loadingDir .. '/' .. self.name .. '.png') then
             filename = Game._loadingDir .. '/' .. self.name .. '.png'
         elseif love.filesystem.getInfo(Game._loadingDir .. '/' .. self.name .. '.jpg') then
             filename = Game._loadingDir .. '/' .. self.name .. '.jpg'
         end
 
-        -- load image file
+        -- Load image file
         local imgData = love.image.newImageData(filename)
 
-        -- get width / height of sprite sheet
+        -- Get width / height of sprite sheet
         local sheetWidth = imgData:getWidth()
         local sheetHeight = imgData:getHeight()
 
-        -- compute width / height of single image
+        -- Compute width / height of single image
         local w = sheetWidth / col
         local h = sheetHeight / row
 
-        -- compute x / y origin
+        -- Compute x / y origin
         local xorigin, yorigin
 
         if type(settings.origin) == 'table' then
-            -- 1. custom origin
+            -- 1. Custom origin
             xorigin, yorigin = settings.origin[1], settings.origin[2]
         elseif type(settings.origin) == 'string' then
-            -- 2. auto origin
+            -- 2. Auto origin
             if settings.origin == 'center' then
                 xorigin = math.floor(w / 2)
                 yorigin = math.floor(h / 2)
@@ -81,7 +81,7 @@ function Sprite.new(name, settings)
                 yorigin = h
             end
         else
-            -- 3. default origin: top left
+            -- 3. Default origin: top left
             xorigin = 0
             yorigin = 0
         end
@@ -89,7 +89,7 @@ function Sprite.new(name, settings)
         local loveImageData = imgData
         local loveImage = love.graphics.newImage(imgData)
 
-        -- create sprite frames
+        -- Create sprite frames
         self.frames = {}
         for y = 0, row - 1, 1 do
             for x = 0, col - 1, 1 do
@@ -98,14 +98,14 @@ function Sprite.new(name, settings)
                 frame.loveImage = loveImage
                 frame.loveImageData = loveImageData
 
-                -- generate quad
+                -- Generate quad
                 frame.loveQuad = love.graphics.newQuad(x * w, y * h, w, h, sheetWidth, sheetHeight)
 
-                -- set size & origin
+                -- Set size & origin
                 frame.size = { width = w, height = h }
                 frame.origin = { x = xorigin, y = yorigin }
 
-                -- generate bounding box data
+                -- Generate bounding box data
                 if bbox then
                     local l = w - 1
                     local r = 0
@@ -113,7 +113,7 @@ function Sprite.new(name, settings)
                     local b = 0
                     local d = {}
 
-                    -- traverse each pixel to get the bounding box and collision mask data
+                    -- Traverse each pixel to get the bounding box and collision mask data
                     for yy = 0, h - 1, 1 do
                         for xx = 0, w - 1, 1 do
                             local _, _, _, a = imgData:getPixel(x * w + xx, y * h + yy)
@@ -140,14 +140,16 @@ function Sprite.new(name, settings)
 
                         data = d,
                     }
+                else
+                    frame.bbox = false
                 end
 
-                -- finally, insert to sprite.frames
+                -- Finally, insert to sprite.frames
                 table.insert(self.frames, frame)
             end
         end
     elseif settings.mode == 'folder' then
-        -- TODO: create a sprite from multiple image files in a folder with the same name
+        -- TODO: Create a sprite from multiple image files in a folder with the same name
     end
 end
 

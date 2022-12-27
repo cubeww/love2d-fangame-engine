@@ -1,7 +1,7 @@
 -- instancepool.lua
 
 -- ******************** Ordered Instance Pool ********************
--- global instance pool. mainly used for executing instance callback functions,
+-- Global instance pool. Mainly used for executing instance callback functions,
 -- such as onUpdate, onDraw, etc.
 
 
@@ -9,7 +9,7 @@ OrderedInstancePool = {
     pool = {},
     sortPool = {}
 }
--- use binary search algorithm to quickly insert instance into the correct depth index
+-- Use binary search algorithm to quickly insert instance into the correct depth index
 function OrderedInstancePool:insert(inst)
     local left = 1
     local right = #self.pool
@@ -25,7 +25,7 @@ function OrderedInstancePool:insert(inst)
     table.insert(self.pool, left, inst)
 end
 
--- generally called at the end of a game frame
+-- Generally called at the end of a game frame
 function OrderedInstancePool:clearRemoved()
     for i = #self.pool, 1, -1 do
         local inst = self.pool[i]
@@ -36,7 +36,7 @@ function OrderedInstancePool:clearRemoved()
     end
 end
 
--- generally called when switching rooms
+-- Generally called when switching rooms
 function OrderedInstancePool:destroyAndRemoveAll()
     for i = #self.pool, 1, -1 do
         local inst = self.pool[i]
@@ -48,7 +48,7 @@ function OrderedInstancePool:destroyAndRemoveAll()
     end
 end
 
--- only remove the instance from this instance pool without performing any other things
+-- Only remove the instance from this instance pool without performing any other things
 function OrderedInstancePool:remove(inst)
     for i, v in ipairs(inst) do
         if inst == v then
@@ -57,12 +57,12 @@ function OrderedInstancePool:remove(inst)
     end
 end
 
--- called when the instance depth value changes
+-- Called when the instance depth value changes
 function OrderedInstancePool:pushSort(inst)
     table.insert(self.sortPool, inst)
 end
 
--- called before drawing
+-- Called before drawing
 function OrderedInstancePool:sortDepth()
     local inst = table.remove(self.sortPool)
     while inst do
@@ -72,43 +72,36 @@ function OrderedInstancePool:sortDepth()
     end
 end
 
-function OrderedInstancePool:update()
-    for _, inst in ipairs(self.pool) do
-        if not inst._shouldRemove then
-            if inst.onUpdate then
-                inst:onUpdate()
-            end
-
-            inst:updatePosition()
-            inst:updateFrameIndex()
-        end
-    end
-end
-
-function OrderedInstancePool:draw()
-    self:sortDepth()
-
-    -- local tiles = Game.roomTarget.orderedTiles
-
-    for _, inst in ipairs(self.pool) do
-        if not inst._shouldRemove then
-            if inst.onDraw then
-                inst:onDraw()
-            else
-                inst:drawSelf()
+-- The pool iterator will skip over all instances that have been 'removed'
+function OrderedInstancePool:iter()
+    local i = 0
+    local pool = self.pool
+    return function()
+        while i < #pool do
+            i = i + 1
+            if not pool[i]._shouldRemove then
+                return pool[i]
             end
         end
+        return nil
     end
 end
 
 -- ******************** Instance Pool ********************
--- instance pool held by each object.
--- mainly used for collision detection and traversing instances of a certain type of object.
+-- Instance pool held by each object.
+-- Mainly used for collision detection and traversing instances of a certain type of object.
 
-InstancePool = {
-    pool = {},
-    stack = {}
-}
+InstancePool = {}
+
+function InstancePool.new()
+    local self = {}
+
+    setmetatable(self, { __index = InstancePool })
+    self.pool = {}
+    self.stack = {}
+
+    return self
+end
 
 function InstancePool:append(inst)
     local i = table.remove(self.stack)
@@ -135,8 +128,4 @@ function InstancePool:remove(inst)
     end
 end
 
-function InstancePool.new()
-    local self = {}
-    setmetatable(self, { __index = InstancePool })
-    return self
-end
+InstancePool.iter = OrderedInstancePool.iter

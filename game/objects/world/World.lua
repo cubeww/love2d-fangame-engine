@@ -2,7 +2,7 @@ Object.extends('World', function(self)
     -- instance properties
     self.visible = false
     self.depth = 10001
-    self.spriteName = None
+    self.sprite = None
 
     -- private variables
     local time = 0
@@ -25,9 +25,15 @@ Object.extends('World', function(self)
     -- lifecycle hooks
     function self:onCreate()
         love.window.setTitle('I wanna play in Love2D!!!')
+
+        Sounds.liyue:play(true)
     end
 
     function self:onUpdate()
+        for i in Objects.Player:iter() do
+
+        end
+
         if Input:pressed(1) then
             print('lsp!')
         end

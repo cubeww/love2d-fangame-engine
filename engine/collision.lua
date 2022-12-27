@@ -1,7 +1,7 @@
 -- collision.lua
--- all methods related to collision detection.
+-- All methods related to collision detection.
 
--- it might be faster to make the math function a local variable? idk...
+-- It might be faster to make the math function a local variable? idk...
 local sin = math.sin
 local cos = math.cos
 local floor = math.floor
@@ -11,7 +11,7 @@ local max = math.max
 local min = math.min
 
 
--- prepare for compute bounding box & transform point
+-- Prepare for compute bounding box & transform point
 function Transform:prepare(xo, yo)
     self.xo = xo
     self.yo = yo
@@ -20,18 +20,18 @@ function Transform:prepare(xo, yo)
     self.st = 0
     self.ct = 1
     if self.angle ~= 0 then
-        local rad = self.angle * pi / 180
+        local rad = self.angle * 0.0174532925 -- 0.0174532925 <=> pi / 180
         self.st = sin(rad)
         self.ct = cos(rad)
     end
 end
 
--- transform a local bounding box to a global bounding box.
--- used to compute instance bounding box
+-- Transform a local bounding box to a global bounding box.
+-- Used to compute instance bounding box
 function Transform:transformRect(left, right, top, bottom)
     local l, r, t, b
     if self.angle == 0 then
-        -- simple version
+        -- Simple version
         l = round(self.x + self.xscale * (left - self.xo))
         r = round(self.x + self.xscale * (right - self.xo + 1) - 1)
 
@@ -46,7 +46,7 @@ function Transform:transformRect(left, right, top, bottom)
             t, b = b, t
         end
     else
-        -- complex version
+        -- Complex version
         local xmin = self.xscale * (left - self.xo)
         local xmax = self.xscale * (right - self.xo + 1) - 1
 
@@ -88,82 +88,92 @@ function Transform:transformRect(left, right, top, bottom)
     return l, r, t, b
 end
 
--- transform a local coordinate to global coordinate.
--- doesn't seem to be very useful, since computing the bounding box uses a more efficient method.
+-- Transform a local coordinate to global coordinate.
+-- Doesn't seem to be very useful, since computing the bounding box uses a more efficient method.
 function Transform:transformPoint(x, y)
     local xx = floor(((x - self.xo) * self.ct + (y - self.yo) * self.st) * self.xs + self.x)
     local yy = floor(((x - self.xo) * -self.st + (y - self.yo) * self.ct) * self.ys + self.y)
     return xx, yy
 end
 
--- transform global coordinate to local coordinate.
--- this is very useful for precise collision detection.
+-- Transform global coordinate to local coordinate.
+-- This is very useful for precise collision detection.
 function Transform:inversePoint(x, y)
     local xx = floor(((x - self.x) * self.ct - (y - self.y) * self.st) * self.rxs + self.xo)
     local yy = floor(((x - self.x) * self.st + (y - self.y) * self.ct) * self.rys + self.yo)
     return xx, yy
 end
 
--- computes the bounding box of the instance and stores the transform state into the given transform.
+-- Computes the bounding box of the instance and stores the transform state into the given transform.
 function Instance:computeBoundingBox()
-    -- only recalculate the collision box when the bounding box is dirty (transform is modified)
+    -- Only recalculate the collision box when the bounding box is dirty (transform is modified)
     if not self.bbox.dirty then
         return
     end
 
-    local mask = self.maskTarget
-    if not mask then
+    if not self.mask then
         return
     end
 
-    -- get the local bounding box of frame
-    local lbbox = mask:getFrame(self.frameIndex).bbox
+    -- Get the local bounding box of frame
+    local localbbox = self.maskFrame.bbox
+    if not localbbox then
+        return
+    end
 
-    self.transform:prepare(lbbox.origin.x, lbbox.origin.y)
+    self.transform:prepare(localbbox.origin.x, localbbox.origin.y)
 
-    -- compute bounding box
+    -- Compute bounding box
     self.bbox.left, self.bbox.right, self.bbox.top, self.bbox.bottom = self.transform:transformRect(
-        lbbox.left, lbbox.right, lbbox.top, lbbox.bottom)
+        localbbox.left, localbbox.right, localbbox.top, localbbox.bottom)
 
-    self.bbox.lbbox = lbbox
+    self.bbox.localbbox = localbbox
     self.bbox.dirty = false
 end
 
 local function preciseCollision(inst1, inst2)
-    -- get bounding box intersection
+    if not inst1.bbox or not inst2.bbox then
+        return false
+    end
+
+    local localbbox1 = inst1.bbox.localbbox
+    local localbbox2 = inst2.bbox.localbbox
+
+    if not localbbox1 or not localbbox2 then
+        return false
+    end
+
+    -- Get bounding box intersection
     local l = max(inst1.bbox.left, inst2.bbox.left)
     local r = min(inst1.bbox.right, inst2.bbox.right)
     local t = max(inst1.bbox.top, inst2.bbox.top)
     local b = min(inst1.bbox.bottom, inst2.bbox.bottom)
 
-    local lbbox1 = inst1.bbox.lbbox
-    local lbbox2 = inst2.bbox.lbbox
-
     for j = t, b, 1 do
         for i = l, r, 1 do
-            -- check for inst1
+            -- Check for inst1
             local xx, yy = inst1.transform:inversePoint(i, j)
 
-            if xx < lbbox1.left or xx >= lbbox1.right + 1 then
+            if xx < localbbox1.left or xx >= localbbox1.right + 1 then
                 goto continue
             end
-            if yy < lbbox1.top or yy >= lbbox1.bottom + 1 then
+            if yy < localbbox1.top or yy >= localbbox1.bottom + 1 then
                 goto continue
             end
-            if not lbbox1.data[floor(xx + yy * lbbox1.size.width + 1)] then
+            if not localbbox1.data[floor(xx + yy * localbbox1.size.width + 1)] then
                 goto continue
             end
 
-            -- check for inst2
+            -- Check for inst2
             xx, yy = inst2.transform:inversePoint(i, j)
 
-            if xx < lbbox2.left or xx >= lbbox2.right + 1 then
+            if xx < localbbox2.left or xx >= localbbox2.right + 1 then
                 goto continue
             end
-            if yy < lbbox2.top or yy >= lbbox2.bottom + 1 then
+            if yy < localbbox2.top or yy >= localbbox2.bottom + 1 then
                 goto continue
             end
-            if lbbox2.data[floor(xx + yy * lbbox2.size.width + 1)] then
+            if localbbox2.data[floor(xx + yy * localbbox2.size.width + 1)] then
                 return true
             end
 
@@ -174,16 +184,13 @@ local function preciseCollision(inst1, inst2)
     return false
 end
 
-function Instance:placeMeeting(objectName, x, y)
+function Instance:placeMeeting(object, x, y)
     x = x or self.x
     y = y or self.y
 
-    local mask = self.maskTarget
-    if not mask then
+    if not self.mask then
         return false
     end
-
-    local obj = Objects[objectName]
 
     local oldX, oldY = self.x, self.y
     self.x, self.y = x or self.x, y or self.y
@@ -192,19 +199,16 @@ function Instance:placeMeeting(objectName, x, y)
 
     local result = false
 
-    obj.recursiveInstancePool:traverseInstance(function(inst)
-        if inst ~= self then
-            local imask = inst.maskTarget
-            if imask then
-                inst:computeBoundingBox()
+    for inst in object:iter(true) do
+        if inst ~= self and inst.mask then
+            inst:computeBoundingBox()
 
-                if preciseCollision(self, inst) then
-                    result = inst
-                    return
-                end
+            if preciseCollision(self, inst) then
+                result = inst
+                return
             end
         end
-    end)
+    end
 
     self.x, self.y = oldX, oldY
     return result

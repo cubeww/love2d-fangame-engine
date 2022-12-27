@@ -1,15 +1,15 @@
 -- object.lua
--- game objects can be extended and instantiated.
+-- Game objects can be extended and instantiated.
 
 Object = {}
 
 Objects = {}
 
--- some special constants only used for sprite name and mask name
+-- Some special constants only used for sprite and mask
 None = false
-Same = true -- mask name only
+Same = true -- Mask only
 
--- the transform of instance
+-- The transform of instance
 Transform = {
     x = 0,
     y = 0,
@@ -17,13 +17,13 @@ Transform = {
     yscale = 1,
     angle = 0,
 
-    -- the following properties are used for collision detection
-    xo = 0, -- x-origin
-    yo = 0, -- y-origin
-    rxs = 1, -- reciprocal of xscale
-    rys = 1, -- reciprocal of yscale
-    st = 0, -- sine of angle
-    ct = 1, -- cosine of angle
+    -- The following properties are used for collision detection
+    xo = 0, -- X-origin
+    yo = 0, -- Y-origin
+    rxs = 1, -- Reciprocal of xscale
+    rys = 1, -- Reciprocal of yscale
+    st = 0, -- Sine of angle
+    ct = 1, -- Cosine of angle
 }
 
 function Transform.new(x, y)
@@ -33,8 +33,8 @@ function Transform.new(x, y)
     }, { __index = Transform })
 end
 
--- prepare a special table, and when the instance accesses an undefined attribute, get the value from this table first.
--- this is very useful for extending the methods of an instance from other modules.
+-- Prepare a special table, and when the instance accesses an undefined attribute, get the value from this table first.
+-- This is very useful for extending the methods of an instance from other modules.
 Instance = {}
 
 -- Instance property access order:
@@ -45,7 +45,7 @@ Instance = {}
 
 local objectMetatable = {
     __index = function(t, k)
-        -- NB: called only when object gets a variable that doesn't exist
+        -- NB: Called only when object gets a variable that doesn't exist
         if t._properties[k] then
             return t._properties[k].get(t)
         else
@@ -61,21 +61,9 @@ local objectMetatable = {
     end
 }
 
--- define object properties (with getter, setter) here
+-- Define object properties (with getter, setter) here
 local objectProperties = {
-    -- object
-    objectTarget = {
-        get = function(t)
-            return Objects[t._objectName]
-        end
-    },
-    parentTarget = {
-        get = function(t)
-            return Objects[t._parentName]
-        end
-    },
-
-    -- transform
+    -- Transform
     x = {
         get = function(t)
             return t.transform.x
@@ -122,7 +110,7 @@ local objectProperties = {
         end
     },
 
-    -- sprite & mask
+    -- Sprite & Mask
     depth = {
         get = function(t)
             return t._depth
@@ -130,24 +118,6 @@ local objectProperties = {
         set = function(t, v)
             t._depth = v
             OrderedInstancePool:pushSort(t)
-        end
-    },
-    spriteName = {
-        get = function(t)
-            return t._spriteName
-        end,
-        set = function(t, v)
-            t._spriteName = v
-            t.bbox.dirty = true
-        end
-    },
-    maskName = {
-        get = function(t)
-            return t._maskName
-        end,
-        set = function(t, v)
-            t._maskName = v
-            t.bbox.dirty = true
         end
     },
     frameIndex = {
@@ -159,25 +129,46 @@ local objectProperties = {
             t.bbox.dirty = true
         end
     },
-
-    spriteTarget = { -- read only
+    frame = { -- Read only
         get = function(t)
-            return Sprites[t._spriteName]
-        end,
-        set = function() end
-    },
-    maskTarget = { -- read only
-        get = function(t)
-            if t._maskName == Same then
-                return Sprites[t._spriteName]
-            else
-                return Sprites[t._maskName]
+            if t.sprite then
+                return t.sprite:getFrame(t._frameIndex)
             end
         end,
         set = function() end
     },
+    maskFrame = { -- Read only
+        get = function(t)
+            if t.mask then
+                return t.mask:getFrame(t._frameIndex)
+            end
+        end,
+        set = function() end
+    },
+    sprite = {
+        get = function(t)
+            return t._sprite
+        end,
+        set = function(t, v)
+            t._sprite = v
+            t.bbox.dirty = true
+        end
+    },
+    mask = {
+        get = function(t)
+            if t._mask == Same then
+                return t._sprite
+            else
+                return t._mask
+            end
+        end,
+        set = function(t, v)
+            t._mask = v
+            t.bbox.dirty = true
+        end
+    },
 
-    -- movement
+    -- Movement
     hspeed = {
         get = function(t)
             return t._hspeed
@@ -216,28 +207,30 @@ local objectProperties = {
     },
 }
 
--- basic instantiation function
-function Object.new()
+-- Basic instantiation function
+
+-- Internal instantiation function. Do not call it directly, instead call SomeObject:new().
+function Object._new()
     local self = {}
 
     self._properties = objectProperties
     setmetatable(self, objectMetatable)
 
-    -- object
+    -- Object
     self.visible = true
     self._depth = 0
     self.persistent = false
 
-    -- transform
+    -- Transform
     self.transform = Transform.new()
 
-    -- sprite & mask
-    self._spriteName = None
-    self._maskName = Same
+    -- Sprite & mask
+    self._sprite = None
+    self._mask = Same
     self._frameIndex = 0
     self.frameSpeed = 1
 
-    -- movement
+    -- Movement
     self._hspeed = 0
     self._vspeed = 0
     self._speed = 0
@@ -249,14 +242,14 @@ function Object.new()
     self.color = Color.white
     self.alpha = 1
 
-    -- bounding box
+    -- Bounding box
     self.bbox = {
         dirty = true,
         left = nil,
         right = nil,
         top = nil,
         bottom = nil,
-        lbbox = nil,
+        localbbox = nil,
     }
 
     self._shouldRemove = false
@@ -274,25 +267,31 @@ function Object.extends(objectName, arg2, arg3)
         parentName = nil
     end
 
-    local self = {
-        objectName = objectName,
+    local self = { -- self refers to the **object**, not the instance
+        name = objectName,
+
+        -- NB: The parent here is unknown, so it cannot be set directly to the parent object itself
+        -- like: parent = Objects[parentName]
         parentName = parentName,
+
         instancePool = InstancePool.new(),
         recursiveInstancePool = InstancePool.new(),
     }
 
-    -- instantiation function
-    function self.new()
+    setmetatable(self, { __index = Object })
+
+    -- Instantiation function
+    function self._new()
+        -- Now that all objects are known, you can use like: Object[parentName]
         local inst
         if parentName then
-            inst = Objects[parentName].new()
+            inst = Objects[parentName]._new()
         else
-            inst = Object.new()
+            inst = Object._new()
         end
         constructor(inst)
 
-        inst._objectName = objectName
-        inst._parentName = parentName
+        inst.object = Objects[objectName]
 
         return inst
     end
@@ -301,3 +300,62 @@ function Object.extends(objectName, arg2, arg3)
 
     return self
 end
+
+-- ******************** Object -> instance functions ********************
+
+-- Creates an instance of an object. Like instance_create() in GameMaker.
+function Object:new(x, y)
+    local inst = self._new()
+    inst.x = x or 0
+    inst.y = y or 0
+
+    -- Append to instance pools
+    OrderedInstancePool:insert(inst) -- 1
+
+    local o = self
+    o.instancePool:append(inst) -- 2
+    while o do
+        o.recursiveInstancePool:append(inst) -- 3...
+        o = Objects[o.parentName]
+    end
+
+    -- Call onCreate method
+    if inst.onCreate then
+        inst:onCreate()
+    end
+
+    return inst
+end
+
+function Object:iter(recursive)
+    recursive = recursive or true
+    return recursive and self.recursiveInstancePool:iter() or self.instancePool:iter()
+end
+
+function Object:with(callback, recursive)
+    for inst in self:iter(recursive) do
+        callback(inst)
+    end
+end
+
+function Object:first()
+    for inst in self:iter(false) do
+        return inst
+    end
+    return nil
+end
+
+function Object:collect(recursive)
+    local result = {}
+
+    for inst in self:iter(recursive) do
+        table.insert(result, inst)
+    end
+
+    return result
+end
+
+-- Object.Block
+--     :iter()
+--     :filter(function(i) return i.x < 0 or i.x > 800 or i.y < 0 or i.y > 608 end)
+--     :with(function(i) i:destroy() end)

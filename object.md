@@ -17,7 +17,6 @@ Object.extends('World', function(self)
         self.visible = true
         self.depth = 10001
         self.persistent = true
-        self.spriteName = sWorld
 
         -- ... create code
     end
