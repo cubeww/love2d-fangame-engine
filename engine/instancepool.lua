@@ -87,6 +87,59 @@ function OrderedInstancePool:iter()
     end
 end
 
+-- FIXME
+function OrderedInstancePool:superIter()
+    local iter = {}
+    local filters = {}
+    local pool = self.pool
+    local i = 0
+
+    function iter:filter(filter)
+        table.insert(filters, filter)
+        return iter
+    end
+
+    function iter:with(func)
+        for inst in iter do
+            func(inst)
+        end
+        return nil
+    end
+
+    function iter:collect()
+        local result = {}
+        for inst in iter do
+            table.insert(result, inst)
+        end
+        return result
+    end
+
+    local mt = {
+        __call = function()
+            while i < #pool do
+                i = i + 1
+                local inst = pool[i]
+                if not inst._shouldRemove then
+                    local flag = true
+                    for _, f in ipairs(filters) do
+                        if not f(inst) then
+                            flag = false
+                            break
+                        end
+                    end
+                    if flag then
+                        return inst
+                    end
+                end
+            end
+            return nil
+        end
+    }
+    setmetatable(iter, mt)
+
+    return iter
+end
+
 -- ******************** Instance Pool ********************
 -- Instance pool held by each object.
 -- Mainly used for collision detection and traversing instances of a certain type of object.

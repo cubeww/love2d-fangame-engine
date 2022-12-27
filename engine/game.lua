@@ -63,14 +63,15 @@ end
 function Game:_update(dt)
     nextTime = nextTime + (1 / self.roomSpeed) -- roomSpeed is defined in 'game.lua'
 
-    for inst in OrderedInstancePool:iter() do
-        if inst.onUpdate then
-            inst:onUpdate()
-        end
+    OrderedInstancePool:superIter()
+        :with(function(inst)
+            if inst.onUpdate then
+                inst:onUpdate()
+            end
 
-        inst:updatePosition()
-        inst:updateFrameIndex()
-    end
+            inst:updatePosition()
+            inst:updateFrameIndex()
+        end)
 end
 
 function Game:_draw()
@@ -105,15 +106,17 @@ function Game:_draw()
     OrderedInstancePool:sortDepth()
 
     -- TODO: Draw tiles
-    for inst in OrderedInstancePool:iter() do
-        if inst.visible then
+    OrderedInstancePool:superIter()
+        :filter(function(inst) return inst.visible end)
+        :with(function(inst)
             if inst.onDraw then
                 inst:onDraw()
             else
                 inst:drawSelf()
             end
-        end
-    end
+        end)
+
+    print((love.timer.getTime() - xxx) * 1000000)
 
     -- Clear removed instances form pools
     OrderedInstancePool:clearRemoved()

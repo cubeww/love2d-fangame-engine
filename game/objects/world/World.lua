@@ -8,6 +8,14 @@ Object.extends('World', function(self)
     function self:onCreate()
         love.window.setTitle('I wanna play in Love2D!!!')
 
+        for _ = 1, 10000, 1 do
+            Objects.SpikeUp:new()
+                :next(function(i)
+                    i.x = math.random(800)
+                    i.y = math.random(608)
+                end)
+        end
+
         Sounds.liyue:play(true)
     end
 
