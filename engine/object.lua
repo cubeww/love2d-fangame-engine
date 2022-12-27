@@ -327,15 +327,80 @@ function Object:new(x, y)
     return inst
 end
 
+-- Advanced iterator of object.
+--[[ this iterator has added some additional features on top of the instance pool iterator
+
+    like:
+        Objects.SomeObject:iter()
+            :filter(function(i) return i.x < 400 end)
+            :filter(function(i) return i.y < 304 end)
+            :filter(function(i) return i.frameIndex >= 2 end)
+            :with(function(i) i:destroy() end)
+
+    equivalent to:
+        for i in Objects.SomeObject:iter() do
+            if i.x < 400 and i.y < 304 and i.frameIndex >= 2 then
+                i:destroy()
+            end
+        end
+
+    It's worth noting that the first method is usually more efficient!
+]]
 function Object:iter(recursive)
     recursive = recursive or true
-    return recursive and self.recursiveInstancePool:iter() or self.instancePool:iter()
+
+    local poolIter = recursive and self.recursiveInstancePool:iter() or self.instancePool:iter()
+    local iter = {}
+    local filters = {}
+
+    function iter:filter(filter)
+        table.insert(filters, filter)
+        return iter
+    end
+
+    function iter:with(func)
+        for inst in iter do
+            func(inst)
+        end
+        return nil
+    end
+
+    function iter:collect()
+        local result = {}
+        for inst in iter do
+            table.insert(result, inst)
+        end
+        return result
+    end
+
+    local mt = {
+        __call = function()
+            local inst = poolIter()
+            while inst do
+                local flag = true
+                for _, f in ipairs(filters) do
+                    if not f(inst) then
+                        flag = false
+                        break
+                    end
+                end
+                if flag then
+                    return inst
+                end
+
+                inst = poolIter()
+            end
+            return nil
+        end
+    }
+    setmetatable(iter, mt)
+
+    return iter
 end
 
-function Object:with(callback, recursive)
-    for inst in self:iter(recursive) do
-        callback(inst)
-    end
+-- some simplified functions for iterators, to make it easier for users to use
+function Object:with(func, recursive)
+    self:iter(recursive):with(func)
 end
 
 function Object:first()
@@ -346,16 +411,7 @@ function Object:first()
 end
 
 function Object:collect(recursive)
-    local result = {}
-
-    for inst in self:iter(recursive) do
-        table.insert(result, inst)
-    end
-
-    return result
+    self:iter(recursive):collect()
 end
 
--- Object.Block
---     :iter()
---     :filter(function(i) return i.x < 0 or i.x > 800 or i.y < 0 or i.y > 608 end)
---     :with(function(i) i:destroy() end)
+

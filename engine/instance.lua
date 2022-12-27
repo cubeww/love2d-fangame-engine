@@ -1,6 +1,11 @@
 -- instance.lua
 -- Provide some basic extension methods for the instance.
 
+function Instance:next(func)
+    func(self)
+    return self
+end
+
 function Instance:updateFrameIndex()
     self.frameIndex = self.frameIndex + self.frameSpeed
 end
