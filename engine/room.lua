@@ -44,24 +44,26 @@ function Room:buildBackgroundImage()
     end
 end
 
--- Two things were done when building tiles: 
---   1. Putting tiles with the same depth together; 
+-- Two things were done when building tiles:
+--   1. Putting tiles with the same depth together;
 --   2. Creating a love quad for each tile.
 function Room:buildTiles()
     if not self.tiles then
         return
     end
 
-    local orderedTiles = {}
+    -- [depth] = [ { x=..., y=... }, { x=..., y=... }, ... ]
+    local tileLayers = {}
+    local tileLayerDepths = {}
     local tileQuads = {}
 
-    for _, tile in pairs(self.tiles) do
+    for _, tile in ipairs(self.tiles) do
         local depth = tile.depth or 0
-        if not orderedTiles[depth] then
-            orderedTiles[depth] = {}
+        if not tileLayers[depth] then
+            tileLayers[depth] = {}
         end
 
-        table.insert(orderedTiles[depth], tile)
+        table.insert(tileLayers[depth], tile)
 
         local loveImage = Sprites[tile.sprite]:getFrame(0).loveImage
         tile.loveImage = loveImage
@@ -87,7 +89,16 @@ function Room:buildTiles()
         end
     end
 
-    self.orderedTiles = orderedTiles
+    for depth, _ in pairs(tileLayers) do
+        table.insert(tileLayerDepths, depth)
+    end
+
+    table.sort(tileLayerDepths, function(x, y)
+        return x > y
+    end)
+
+    self.tileLayers = tileLayers
+    self.tileLayerDepths = tileLayerDepths
 end
 
 -- Call this after all sprites are loaded

@@ -1,1 +1,0 @@
-Sound.new('liyue')

@@ -116,8 +116,12 @@ local objectProperties = {
             return t._depth
         end,
         set = function(t, v)
+            if not t._shouldSort then
+                OrderedInstancePool:pushSort(t)
+                t._shouldSort = true
+            end
+            
             t._depth = v
-            OrderedInstancePool:pushSort(t)
         end
     },
     frameIndex = {
@@ -217,6 +221,9 @@ function Object._new()
     setmetatable(self, objectMetatable)
 
     -- Object
+    self._shouldSort = true
+    OrderedInstancePool:pushSort(self)
+
     self.visible = true
     self._depth = 0
     self.persistent = false
@@ -310,7 +317,11 @@ function Object:new(x, y)
     inst.y = y or 0
 
     -- Append to instance pools
-    OrderedInstancePool:insert(inst) -- 1
+
+    -- We do not need to manually add to the ordered instance pool. 
+    -- It will be inserted in the "sortDepth" method of the ordered instance pool.
+
+    -- OrderedInstancePool:insert(inst) -- 1
 
     local o = self
     o.instancePool:append(inst) -- 2
@@ -399,9 +410,6 @@ function Object:iter(recursive)
 end
 
 -- some simplified functions for iterators, to make it easier for users to use
-function Object:with(func, recursive)
-    self:iter(recursive):with(func)
-end
 
 function Object:first()
     for inst in self:iter(false) do
@@ -410,8 +418,14 @@ function Object:first()
     return nil
 end
 
-function Object:collect(recursive)
-    self:iter(recursive):collect()
+function Object:with(func, recursive)
+    self:iter(recursive):with(func)
 end
 
+function Object:filter(filter, recursive)
+    return self:iter(recursive):filter(filter)
+end
 
+function Object:collect(recursive)
+    return self:iter(recursive):collect()
+end

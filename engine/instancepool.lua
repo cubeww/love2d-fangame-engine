@@ -64,10 +64,14 @@ end
 
 -- Called before drawing
 function OrderedInstancePool:sortDepth()
+    -- Pop item from sort pool
     local inst = table.remove(self.sortPool)
     while inst do
         self:remove(inst)
         self:insert(inst)
+
+        inst._shouldSort = false
+
         inst = table.remove(self.sortPool)
     end
 end
@@ -85,59 +89,6 @@ function OrderedInstancePool:iter()
         end
         return nil
     end
-end
-
--- FIXME
-function OrderedInstancePool:superIter()
-    local iter = {}
-    local filters = {}
-    local pool = self.pool
-    local i = 0
-
-    function iter:filter(filter)
-        table.insert(filters, filter)
-        return iter
-    end
-
-    function iter:with(func)
-        for inst in iter do
-            func(inst)
-        end
-        return nil
-    end
-
-    function iter:collect()
-        local result = {}
-        for inst in iter do
-            table.insert(result, inst)
-        end
-        return result
-    end
-
-    local mt = {
-        __call = function()
-            while i < #pool do
-                i = i + 1
-                local inst = pool[i]
-                if not inst._shouldRemove then
-                    local flag = true
-                    for _, f in ipairs(filters) do
-                        if not f(inst) then
-                            flag = false
-                            break
-                        end
-                    end
-                    if flag then
-                        return inst
-                    end
-                end
-            end
-            return nil
-        end
-    }
-    setmetatable(iter, mt)
-
-    return iter
 end
 
 -- ******************** Instance Pool ********************

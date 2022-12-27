@@ -54,6 +54,9 @@ function Game:_load()
     self.displayWidth = self.displayWidth or 800
     self.displayHeight = self.displayHeight or 608
 
+    self.cameraX = 0
+    self.cameraY = 0
+
     -- Go to start room (defined in 'game.lua')
     self:_changeRoom(Rooms[self.startRoomName])
 
@@ -63,18 +66,21 @@ end
 function Game:_update(dt)
     nextTime = nextTime + (1 / self.roomSpeed) -- roomSpeed is defined in 'game.lua'
 
-    OrderedInstancePool:superIter()
-        :with(function(inst)
-            if inst.onUpdate then
-                inst:onUpdate()
-            end
+    for inst in OrderedInstancePool:iter() do
+        if inst.onUpdate then
+            inst:onUpdate()
+        end
 
-            inst:updatePosition()
-            inst:updateFrameIndex()
-        end)
+        inst:updatePosition()
+        inst:updateFrameIndex()
+    end
 end
 
 function Game:_draw()
+    love.graphics.push()
+
+    love.graphics.translate(-self.cameraX, -self.cameraY)
+
     local bg = self.room.background
 
     -- Draw room background color
@@ -88,14 +94,15 @@ function Game:_draw()
     if bg.loveImage then
         if bg.mode == 'tile' then
             love.graphics.draw(bg.loveImage, bg.loveQuad,
-                -bg.width + self.backgroundX % bg.width,
-                -bg.height + self.backgroundY % bg.height)
+                -bg.width + (self.backgroundX - self.cameraX) % bg.width + self.cameraX,
+                -bg.height + (self.backgroundY - self.cameraY) % bg.height + self.cameraY)
         else
             for j = -1, 1, 1 do
                 for i = -1, 1, 1 do
                     love.graphics.draw(bg.loveImage,
-                        i * Game.displayWidth + self.backgroundX % Game.displayWidth,
-                        j * Game.displayHeight + self.backgroundY % Game.displayHeight, 0,
+                        i * Game.displayWidth + (self.backgroundX - self.cameraX) % Game.displayWidth + self.cameraX,
+                        j * Game.displayHeight + (self.backgroundY - self.cameraY) % Game.displayHeight + self.cameraY,
+                        0,
                         Game.displayWidth / bg.width, Game.displayHeight / bg.height)
                 end
             end
@@ -105,18 +112,50 @@ function Game:_draw()
     -- Draw instances
     OrderedInstancePool:sortDepth()
 
-    -- TODO: Draw tiles
-    OrderedInstancePool:superIter()
-        :filter(function(inst) return inst.visible end)
-        :with(function(inst)
+    local function drawInstance(inst)
+        -- Draw instance
+        if inst.visible then
             if inst.onDraw then
                 inst:onDraw()
             else
                 inst:drawSelf()
             end
-        end)
+        end
+    end
 
-    print((love.timer.getTime() - xxx) * 1000000)
+    local function drawTileLayer(layer)
+        -- Draw tile layer
+        for _, tile in ipairs(layer) do
+            love.graphics.draw(tile.loveImage, tile.loveQuad, tile.x, tile.y)
+        end
+
+    end
+
+    local iter = OrderedInstancePool:iter()
+    local inst = iter()
+
+    local j = 1
+    while inst and j <= #self.room.tileLayerDepths do
+        local tileLayerDepth = self.room.tileLayerDepths[j]
+        if inst.depth > tileLayerDepth then
+            drawInstance(inst)
+            inst = iter()
+        else
+            drawTileLayer(self.room.tileLayers[tileLayerDepth])
+            j = j + 1
+        end
+    end
+
+    while inst do
+        drawInstance(inst)
+        inst = iter()
+    end
+
+    while j <= #self.room.tileLayerDepths do
+        local tileLayerDepth = self.room.tileLayerDepths[j]
+        drawTileLayer(self.room.tileLayers[tileLayerDepth])
+        j = j + 1
+    end
 
     -- Clear removed instances form pools
     OrderedInstancePool:clearRemoved()
@@ -142,6 +181,8 @@ function Game:_draw()
     love.timer.sleep(nextTime - curTime)
 
     love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()))
+
+    love.graphics.pop()
 end
 
 function Game:_changeRoom(room)
