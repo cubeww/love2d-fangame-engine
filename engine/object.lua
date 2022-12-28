@@ -40,14 +40,16 @@ Instance = {}
 -- Instance property access order:
 
 -- -> Instance Properties (with getter/setter)
---   -> Instance Methods (the table above)
---     -> User Instance Fields & Methods
+--   -> User Instance Fields & Methods
+--     -> Instance Methods (the table above)
 
 local objectMetatable = {
     __index = function(t, k)
         -- NB: Called only when object gets a variable that doesn't exist
         if t._properties[k] then
             return t._properties[k].get(t)
+        elseif rawget(t, k) then
+            return rawget(t, k)
         else
             return Instance[k]
         end
@@ -304,7 +306,6 @@ function Object.extends(objectName, arg2, arg3)
     end
 
     Objects[objectName] = self
-
     return self
 end
 

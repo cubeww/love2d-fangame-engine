@@ -1,0 +1,109 @@
++world
+	|World
+	|Camera
+	|SmoothCamera
+	|PlayMusic
+	|TitleMenu
+	|DifficultyMenu
+	|OptionsMenu
+	|KeyboardControlsMenu
+	|ControllerMenu
++player
+	|PlayerStart
+	|Player
+	|Bow
+	|Bullet
+	|BloodEmitter
+	|Blood
+	|GameOver
++blocks
+	|Block
+	|MiniBlock
+	|SlipBlock
+	|BlockInvis
+	|BlockFake
+	|SlideBlock
+	|SlideBlockL
+	|SlideBlockR
+	|BossBlock
+	|SaveBlocker
++slopes
+	|Slope
+	|SlopeDownLeft
+	|SlopeDownRight
+	|SlopeUpLeft
+	|SlopeUpRight
++platforms
+	|Platform
+	|MovingPlatform
+	|MovingPlatformNoBounce
+	|BlockRise
+	|BlockFall
++killers
+	|PlayerKiller
+	|SpikeUp
+	|SpikeRight
+	|SpikeLeft
+	|SpikeDown
+	|MiniSpikeUp
+	|MiniSpikeRight
+	|MiniSpikeLeft
+	|MiniSpikeDown
+	|Cherry
+	|CherryBounce
+	|CherryBounceRandom
+	|CherryBounceLat
+	|CherryBounceVert
+	|KillerBlock
+	+bosses
+		|CherryEnemyTest
+		|CherryBossTest
+		+miku
+			|Miku
+			|CherryRandomCol
+			|CherryRandomColExplode
+			|CherryRandomColBounce
++triggers
+	|FreeTrigger
+	|TriggerButton
+	|KillerTrigger
+	|SpikeTriggerUp
+	|SpikeTriggerRight
+	|SpikeTriggerLeft
+	|SpikeTriggerDown
+	|CherryTrigger
++misc
+	|Water
+	|Water2
+	|Water3
+	|WalljumpR
+	|WalljumpL
+	|JumpRefresher
+	|Sign
+	|GravityUp
+	|GravityDown
++saves
+	|SaveMedium
+	|Save
+	|SaveVHard
+	|SaveMediumFlip
+	|SaveFlip
+	|SaveVHardFlip
++warps
+	|WarpStart
+	|RoomChanger
+	|Warp
+	|WarpNext
+	|WarpAutosaveNext
+	|OutsideRoomChanger
++items
+	|SecretItem
+	|SecretIndicator
+	|BossItem
+	|BossIndicator
+	|GameClear
++fmod
+	|FMODPanFaderObj
+	|FMODFreqFaderObj
+	|FMODPitchFaderObj
+	|FMODFaderObj

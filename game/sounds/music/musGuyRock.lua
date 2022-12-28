@@ -1,1 +1,3 @@
-Sound.new('musGuyRock')
+Sound.new('musGuyRock', {
+    type = 'stream'
+})

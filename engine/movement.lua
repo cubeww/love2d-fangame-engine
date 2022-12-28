@@ -2,6 +2,17 @@
 -- The movement functions of the instance.
 -- Some are derived from Gamemaker HTML5, for consistency with the classic engine.
 
+local sin = math.sin
+local cos = math.cos
+local floor = math.floor
+local round = math.round
+local pi = math.pi
+local max = math.max
+local min = math.min
+local abs = math.abs
+local atan2 = math.atan2
+local pow = math.pow
+local sqrt = math.sqrt
 
 -- Called when hspeed or vspeed is modified
 function Instance:computeSpeedDirection()
@@ -15,7 +26,7 @@ function Instance:computeSpeedDirection()
             self._direction = 0
         end
     else
-        local dd = math.atan2(self._vspeed, self._hspeed) * 180 / math.pi
+        local dd = atan2(self._vspeed, self._hspeed) * 180 / pi
         if dd <= 0 then
             self._direction = -dd
         else
@@ -23,28 +34,28 @@ function Instance:computeSpeedDirection()
         end
     end
 
-    if self._direction - math.round(self._direction) < 0.0001 then
-        self._direction = math.round(self._direction) % 360
+    if self._direction - round(self._direction) < 0.0001 then
+        self._direction = round(self._direction) % 360
     end
 
     -- Compute speed
-    self._speed = math.sqrt(math.pow(self._hspeed, 2) + math.pow(self._vspeed, 2))
-    if math.abs(self._speed - math.round(self._speed)) < 0.0001 then
-        self._speed = math.round(self._speed)
+    self._speed = sqrt(pow(self._hspeed, 2) + pow(self._vspeed, 2))
+    if abs(self._speed - round(self._speed)) < 0.0001 then
+        self._speed = round(self._speed)
     end
 end
 
 -- Called when speed or direction is modified
 function Instance:computeHVSpeed()
-    self._hspeed = self._speed * math.cos(self._direction * 0.0174532925) -- 0.0174532925 <=> math.pi / 180
-    self._vspeed = -self._speed * math.sin(self._direction * 0.0174532925)
+    self._hspeed = self._speed * cos(self._direction * 0.0174532925) -- 0.0174532925 <=> pi / 180
+    self._vspeed = -self._speed * sin(self._direction * 0.0174532925)
 
     -- Round if close enough
-    if math.abs(self._hspeed - math.round(self._hspeed)) < 0.0001 then
-        self._hspeed = math.round(self._hspeed)
+    if abs(self._hspeed - round(self._hspeed)) < 0.0001 then
+        self._hspeed = round(self._hspeed)
     end
-    if math.abs(self._vspeed - math.round(self._vspeed)) < 0.0001 then
-        self._vspeed = math.round(self._vspeed)
+    if abs(self._vspeed - round(self._vspeed)) < 0.0001 then
+        self._vspeed = round(self._vspeed)
     end
 end
 
@@ -69,9 +80,9 @@ function Instance:updatePosition()
 
     if self.gravity ~= 0 then
         -- Apply gravity
-        self._hspeed = self._hspeed + self.gravity * math.cos(self.gravityDirection * 0.0174532925)
-        self._vspeed = self._vspeed - self.gravity * math.sin(self.gravityDirection * 0.0174532925)
-        Movement.computeSpeedDirection(self)
+        self._hspeed = self._hspeed + self.gravity * cos(self.gravityDirection * 0.0174532925)
+        self._vspeed = self._vspeed - self.gravity * sin(self.gravityDirection * 0.0174532925)
+        self:computeSpeedDirection()
     end
 
     -- Update position
@@ -80,3 +91,4 @@ function Instance:updatePosition()
         self.y = self.y + self._vspeed
     end
 end
+

@@ -1,19 +1,6 @@
 -- game.lua
 -- Control the game loop and encapsulate methods related to game management.
 
-require('engine.color')
-require('engine.object')
-require('engine.instance')
-require('engine.instancepool')
-require('engine.collision')
-require('engine.movement')
-require('engine.room')
-require('engine.sprite')
-require('engine.input')
-require('engine.sound')
-
-Game = {}
-
 -- Recursively require all lua files in the **game** directory
 local function requireAll(folder)
     for _, file in pairs(love.filesystem.getDirectoryItems(folder)) do
@@ -30,6 +17,21 @@ local function requireAll(folder)
     end
 end
 
+Game = {}
+
+requireAll('libs')
+require('engine.color')
+require('engine.object')
+require('engine.instance')
+require('engine.instancepool')
+require('engine.collision')
+require('engine.movement')
+require('engine.room')
+require('engine.sprite')
+require('engine.input')
+require('engine.sound')
+require('engine.font')
+
 local nextTime
 
 function Game:_load()
@@ -38,7 +40,6 @@ function Game:_load()
     self._loadingFile = ''
 
     -- Load game scripts
-    requireAll('libs')
     requireAll('game')
 
     -- Build rooms
@@ -57,6 +58,8 @@ function Game:_load()
 
     self.cameraX = 0
     self.cameraY = 0
+    self.cameraWidth = 800
+    self.cameraHeight = 608
 
     -- Go to start room (defined in 'game.lua')
     self:_changeRoom(Rooms[self.startRoomName])
@@ -102,7 +105,8 @@ function Game:_draw()
                 for i = -1, 1, 1 do
                     love.graphics.draw(bg.loveImage,
                         i * Game.displayWidth + (self.backgroundX - self.cameraX) % Game.displayWidth + self.cameraX,
-                        j * Game.displayHeight + (self.backgroundY - self.cameraY) % Game.displayHeight + self.cameraY,
+                        j * Game.displayHeight + (self.backgroundY - self.cameraY) % Game.displayHeight + self.cameraY
+                        ,
                         0,
                         Game.displayWidth / bg.width, Game.displayHeight / bg.height)
                 end
@@ -191,6 +195,13 @@ function Game:_changeRoom(room)
         return
     end
 
+    -- Call onExitRoom method of every instance
+    for inst in OrderedInstancePool:iter() do
+        if inst.onExitRoom then
+            inst:onExitRoom()
+        end
+    end
+
     -- Call onExit method of old room
     if self.room and self.room.onExit then
         self.room:onExit()
@@ -210,6 +221,15 @@ function Game:_changeRoom(room)
             if i.onCreate then
                 i.onCreate(inst)
             end
+        end
+    end
+
+    OrderedInstancePool:sortDepth()
+
+    -- Call onEnterRoom method of every instance
+    for inst in OrderedInstancePool:iter() do
+        if inst.onEnterRoom then
+            inst:onEnterRoom()
         end
     end
 

@@ -1,0 +1,16 @@
+gp_padl=11
+gp_padr=12
+gp_padu=13
+gp_padd=14
+gp_face1=1
+gp_face2=2
+gp_face3=3
+gp_face4=4
+gp_select=7
+gp_start=8
+gp_shoulderl=5
+gp_shoulderr=6
+gp_shoulderlb=9
+gp_shoulderrb=10
+gp_stickl=15
+gp_stickr=16

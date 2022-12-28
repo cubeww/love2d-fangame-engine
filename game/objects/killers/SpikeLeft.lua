@@ -1,3 +1,3 @@
-Object.extends('SpikeUp', function(self)
-    self.sprite = Sprites.sSpikeUp
+Object.extends('SpikeLeft', 'PlayerKiller', function(self)
+    self.sprite = Sprites.sSpikeLeft
 end)

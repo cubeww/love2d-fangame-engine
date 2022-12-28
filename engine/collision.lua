@@ -91,16 +91,16 @@ end
 -- Transform a local coordinate to global coordinate.
 -- Doesn't seem to be very useful, since computing the bounding box uses a more efficient method.
 function Transform:transformPoint(x, y)
-    local xx = floor(((x - self.xo) * self.ct + (y - self.yo) * self.st) * self.xs + self.x)
-    local yy = floor(((x - self.xo) * -self.st + (y - self.yo) * self.ct) * self.ys + self.y)
+    local xx = round(((x - self.xo) * self.ct + (y - self.yo) * self.st) * self.xs + self.x)
+    local yy = round(((x - self.xo) * -self.st + (y - self.yo) * self.ct) * self.ys + self.y)
     return xx, yy
 end
 
 -- Transform global coordinate to local coordinate.
 -- This is very useful for precise collision detection.
 function Transform:inversePoint(x, y)
-    local xx = floor(((x - self.x) * self.ct - (y - self.y) * self.st) * self.rxs + self.xo)
-    local yy = floor(((x - self.x) * self.st + (y - self.y) * self.ct) * self.rys + self.yo)
+    local xx = round(((x - self.x) * self.ct - (y - self.y) * self.st) * self.rxs + self.xo)
+    local yy = round(((x - self.x) * self.st + (y - self.y) * self.ct) * self.rys + self.yo)
     return xx, yy
 end
 
@@ -193,7 +193,7 @@ function Instance:placeMeeting(object, x, y)
     end
 
     local oldX, oldY = self.x, self.y
-    self.x, self.y = x or self.x, y or self.y
+    self.x, self.y = x, y
 
     self:computeBoundingBox()
 
@@ -205,11 +205,38 @@ function Instance:placeMeeting(object, x, y)
 
             if preciseCollision(self, inst) then
                 result = inst
-                return
+                break
             end
         end
     end
 
     self.x, self.y = oldX, oldY
     return result
+end
+
+function Instance:moveContact(object, dir, maxDist)
+    local steps
+    if maxDist <= 0 then
+        steps = 1000
+    else
+        steps = round(maxDist)
+    end
+
+    local dx = cos(dir * pi / 180)
+    local dy = -sin(dir * pi / 180)
+
+    if self:placeMeeting(object) then
+        return
+    end
+
+    local i = 1
+    while i <= steps do
+        if not self:placeMeeting(object, self.x + dx, self.y + dy) then
+            self.x = self.x + dx
+            self.y = self.y + dy
+        else
+            return
+        end
+        i = i + 1
+    end
 end

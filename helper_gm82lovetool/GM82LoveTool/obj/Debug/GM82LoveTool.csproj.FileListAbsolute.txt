@@ -1,0 +1,16 @@
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\bin\Debug\GM82LoveTool.exe.config
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\bin\Debug\GM82LoveTool.exe
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\bin\Debug\GM82LoveTool.pdb
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\obj\Debug\GM82LoveTool.csproj.AssemblyReference.cache
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\obj\Debug\GM82LoveTool.csproj.SuggestedBindingRedirects.cache
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\obj\Debug\GM82LoveTool.csproj.CoreCompileInputs.cache
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\obj\Debug\GM82LoveTool.exe
+D:\Projects\CSharp\GM82LoveTool\GM82LoveTool\obj\Debug\GM82LoveTool.pdb
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\bin\Debug\GM82LoveTool.exe.config
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\bin\Debug\GM82LoveTool.exe
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\bin\Debug\GM82LoveTool.pdb
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\obj\Debug\GM82LoveTool.csproj.AssemblyReference.cache
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\obj\Debug\GM82LoveTool.csproj.SuggestedBindingRedirects.cache
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\obj\Debug\GM82LoveTool.csproj.CoreCompileInputs.cache
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\obj\Debug\GM82LoveTool.exe
+D:\Projects\Love\I wanna play in Love2D\scripts\helper_gm82lovetool\GM82LoveTool\obj\Debug\GM82LoveTool.pdb

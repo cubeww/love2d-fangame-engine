@@ -1,0 +1,11 @@
+color=14811135
+new_window=1
+caption=
+left=-1
+top=-1
+width=600
+height=400
+border=1
+resizable=1
+window_on_top=0
+freeze_game=1

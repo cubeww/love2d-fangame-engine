@@ -19,6 +19,7 @@ function Sound.new(name, settings)
         if love.filesystem.getInfo(Game._loadingDir .. '/' .. self.name .. ext) then
             filename = Game._loadingDir .. '/' .. self.name .. ext
             type = settings.type or 'static'
+            break
         end
     end
 

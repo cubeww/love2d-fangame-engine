@@ -11,6 +11,8 @@ function Room.new(roomName, contents)
 
     self.name = roomName
     self.size = self.size or { 800, 608 }
+    self.width = self.size[1]
+    self.height = self.size[2]
     self.background = self.background or {}
     self.instances = self.instances or {}
     self.tiles = self.tiles or {}

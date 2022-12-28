@@ -154,12 +154,14 @@ function Sprite.new(name, settings)
 end
 
 function Sprite:getFrame(index)
-    return self.frames[math.floor(index % #self.frames + 1)]
+    return self.frames[math.floor(index % #self.frames) + 1]
 end
 
 function Sprite:draw(index, x, y, xscale, yscale, angle, color)
     local frame = self:getFrame(index)
-    love.graphics.setColor(color)
+    angle = angle or 0
+    color = color or { 1, 1, 1, 1 }
+    love.graphics.setColor(color[1], color[2], color[3], color[4])
     love.graphics.draw(frame.loveImage, frame.loveQuad,
         x, y, math.rad(angle), xscale, yscale,
         frame.origin.x, frame.origin.y)
