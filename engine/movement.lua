@@ -2,8 +2,6 @@
 -- The movement functions of the instance.
 -- Some are derived from Gamemaker HTML5, for consistency with the classic engine.
 
-Movement = {}
-
 
 -- Called when hspeed or vspeed is modified
 function Instance:computeSpeedDirection()

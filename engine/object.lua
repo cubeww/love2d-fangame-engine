@@ -179,7 +179,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._hspeed = v
-            Movement.computeSpeedDirection(t)
+            t:computeSpeedDirection(t)
         end
     },
     vspeed = {
@@ -188,7 +188,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._vspeed = v
-            Movement.computeSpeedDirection(t)
+            t:computeSpeedDirection(t)
         end
     },
     speed = {
@@ -197,7 +197,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._speed = v
-            Movement.computeHVSpeed(t)
+            t:computeHVSpeed(t)
         end
     },
     direction = {
@@ -206,7 +206,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._direction = v
-            Movement.computeHVSpeed(t)
+            t:computeHVSpeed(t)
         end
     },
 }

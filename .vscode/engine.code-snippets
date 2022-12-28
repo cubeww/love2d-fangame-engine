@@ -1,0 +1,76 @@
+{
+    // Object
+    "Extend an object": {
+        "scope": "lua",
+        "prefix": "obj",
+        "body": [
+            "Object.extends('$1', function(self)",
+            "    visible = ${2:true}",
+            "    sprite = ${3:None}",
+            "    mask = ${4:Same}",
+            "    persistent = ${5:false}",
+            "end)"
+        ],
+        "description": "Extend an object"
+    },
+    "Extend an object with template": {
+        "scope": "lua",
+        "prefix": "objfull",
+        "body": [
+            "Object.new('${1:ObjectName}', function(self)",
+            "    visible = ${2:true}",
+            "    sprite = ${3:None}",
+            "    mask = ${4:Same}",
+            "    persistent = ${5:false}",
+            "    ",
+            "    function onCreate()",
+            "        $6",
+            "    end",
+            "    ",
+            "    function onUpdate()",
+            "        $7",
+            "    end",
+            "    ",
+            "    function onDraw()",
+            "        $8",
+            "    end",
+            "end)",
+        ],
+        "description": "Extend an object"
+    },
+    // Sprite
+    "New a sprite": {
+        "scope": "lua",
+        "prefix": "spr",
+        "body": [
+            "Sprite.new('s${1:SpriteName}', {",
+            "    origin = {${2:0}, ${3:0}},",
+            "    col = ${4:1},",
+            "    row = 1,",
+            "    bbox = ${5:true},",
+            "})"
+        ],
+        "description": "New a sprite"
+    },
+    // Sound
+    "New a sound effect": {
+        "scope": "lua",
+        "prefix": ["snd", "sfx", "se"],
+        "body": [
+            "Sound.new('snd${1:SoundName}', {",
+            "    type = 'static'",
+            "})",
+        ],
+        "description": "New a sound effect"
+    },
+    "New a music": {
+        "scope": "lua",
+        "prefix": ["mus", "bgm"],
+        "body": [
+            "Sound.new('mus${1:SoundName}', {",
+            "    type = 'stream'",
+            "})",
+        ],
+        "description": "New a music"
+    },
+}

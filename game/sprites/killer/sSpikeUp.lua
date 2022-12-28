@@ -1,1 +1,0 @@
-Sprite.new('sSpikeUp')

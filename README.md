@@ -15,7 +15,7 @@ The engine is still under development, so there may be some bugs.
 1. Clone / download the repository
 2. Install love2d runner [LÖVE - Free 2D Game Engine (love2d.org)](https://love2d.org/)
 3. (Recommend) Set the love2d installation path as an **environment variable**
-4. (Recommend) Download and install vscode, and install the "Lua Language Server" extension (sumneko)
+4. (Recommend) Download and install vscode, and install the "Lua Language Server (sumneko)" extension 
 5. Open the repository folder with vscode and start developing.
 6. Run 'lovec .' in the terminal to test the engine/game.
 

@@ -7,10 +7,9 @@ Room.new('rInit', {
     },
 
     instances = {
-        { object = 'World', x = 400, y = 304, onCreate = function() depth = 3 end },
-        { object = 'Player', x = 400, y = 304, onCreate = function() depth = 3 end },
-    }
-    ,
+        { object = 'World', x = 400, y = 304 },
+    },
+
     tiles = {
         { sprite = "sAllTiles", x = 0, y = 576, xo = 32, yo = 0, w = 32, h = 32, depth = 1000 },
         { sprite = "sAllTiles", x = 768, y = 576, xo = 32, yo = 0, w = 32, h = 32, depth = 1000 },

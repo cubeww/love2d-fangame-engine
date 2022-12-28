@@ -38,6 +38,7 @@ function Game:_load()
     self._loadingFile = ''
 
     -- Load game scripts
+    requireAll('libs')
     requireAll('game')
 
     -- Build rooms

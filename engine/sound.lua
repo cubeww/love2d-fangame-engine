@@ -6,7 +6,8 @@ Sound = {}
 
 local soundFormats = { '.wav', '.mp3', '.ogg', '.flac' }
 
-function Sound.new(name)
+function Sound.new(name, settings)
+    settings = settings or {}
     local self = setmetatable({}, { __index = Sound })
 
     self.name = name
@@ -17,7 +18,7 @@ function Sound.new(name)
         -- Search for sound files with the same name
         if love.filesystem.getInfo(Game._loadingDir .. '/' .. self.name .. ext) then
             filename = Game._loadingDir .. '/' .. self.name .. ext
-            type = (ext == '.wav') and 'static' or 'stream'
+            type = settings.type or 'static'
         end
     end
 
