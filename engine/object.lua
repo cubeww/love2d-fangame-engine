@@ -122,7 +122,7 @@ local objectProperties = {
                 OrderedInstancePool:pushSort(t)
                 t._shouldSort = true
             end
-            
+
             t._depth = v
         end
     },
@@ -131,8 +131,10 @@ local objectProperties = {
             return t._frameIndex
         end,
         set = function(t, v)
+            if t.mask and (t.mask:getFrame(v) ~= t.mask:getFrame(t._frameIndex)) then
+                t.bbox.dirty = true
+            end
             t._frameIndex = v
-            t.bbox.dirty = true
         end
     },
     frame = { -- Read only
@@ -319,15 +321,16 @@ function Object:new(x, y)
 
     -- Append to instance pools
 
-    -- We do not need to manually add to the ordered instance pool. 
+    -- We do not need to manually add to the ordered instance pool.
     -- It will be inserted in the "sortDepth" method of the ordered instance pool.
 
     -- OrderedInstancePool:insert(inst) -- 1
 
     local o = self
-    o.instancePool:append(inst) -- 2
+    inst.poolIndex = o.instancePool:append(inst) -- 2
+    inst.recursivePoolIndex = {}
     while o do
-        o.recursiveInstancePool:append(inst) -- 3...
+        table.insert(inst.recursivePoolIndex, o.recursiveInstancePool:append(inst)) -- 3...
         o = Objects[o.parentName]
     end
 

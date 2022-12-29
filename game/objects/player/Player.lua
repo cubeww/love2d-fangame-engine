@@ -7,7 +7,6 @@ Object.extends('Player', function(self)
 
     local jump = 8.5 * World.grav
     local jump2 = 7 * World.grav
-    local djump = 1
     local maxSpeed = 3
     local maxVspeed = 9
     local onPlatform = false
@@ -19,22 +18,35 @@ Object.extends('Player', function(self)
     self.frameSpeed = 0.2
     self.frozen = false
     self.gravity = 0.4
+    self.djump = 1
+
+    function self:onCreate()
+        if World.autosave then
+            World:saveGame(true)
+        end
+    end
 
     function self:jump()
-        if self:placeMeeting(Objects.Block, self.x, self.y + World.grav) or onPlatform or
-            self:placeMeeting(Objects.Water, self.x, self.y + World.grav) then
+        if self:placeMeeting(Objects.Block, self.x, self.y + World.grav) or
+            self:placeMeeting(Objects.Platform, self.x, self.y + World.grav) or
+            self:placeMeeting(Objects.Water, self.x, self.y + World.grav) or
+            onPlatform then
+
             self.vspeed = -jump
             self.djump = 1
             Sounds.sndJump:play()
-        elseif djump == 1 or self:placeMeeting(Objects.Water2, self.x, self.y + World.grav) then
+
+        elseif self.djump == 1 or self:placeMeeting(Objects.Water2, self.x, self.y + World.grav) then
             self.vspeed = -jump2
             self.sprite = Sprites.sPlayerJump
             Sounds.sndDJump:play()
 
             if not self:placeMeeting(Objects.Water3, self.x, self.y + World.grav) then
-                djump = 0
+                -- Take away the player's double jump
+                self.djump = 0
             else
-                djump = 1
+                -- Replenish self.djump if touching water3
+                self.djump = 1
             end
         end
     end
@@ -57,11 +69,16 @@ Object.extends('Player', function(self)
         if Game.room == Rooms.rDifficultySelect then
             self:destroy()
             Game:restartRoom()
+
             return
         end
 
-        World.death = World.death + 1
+        Sounds.sndDeath:play()
+
+        Objects.BloodEmitter:new(self.x, self.y)
         self:destroy()
+
+        World.death = World.death + 1
     end
 
     function self:onUpdate()
@@ -186,7 +203,7 @@ Object.extends('Player', function(self)
                     end
 
                     onPlatform = true
-                    djump = 1
+                    self.djump = 1
                 end
             else
                 -- TODO: platform flipped check
@@ -200,7 +217,7 @@ Object.extends('Player', function(self)
 
         if water1 or water2 or water3 then
             if water1 or water3 then
-                djump = 1
+                self.djump = 1
             end
 
             if self.vspeed * World.grav > 2 then
@@ -240,12 +257,12 @@ Object.extends('Player', function(self)
                     end
                     if self.vspeed > 0 then
                         self:moveContact(Objects.Block, 270, math.abs(self.vspeed))
-                        djump = 1
+                        self.djump = 1
                     end
                 else
                     if self.vspeed <= 0 then
                         self:moveContact(Objects.Block, 90, math.abs(self.vspeed))
-                        djump = 1
+                        self.djump = 1
                     end
                     if self.vspeed > 0 then
                         self:moveContact(Objects.Block, 270, math.abs(self.vspeed))

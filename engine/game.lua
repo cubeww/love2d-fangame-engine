@@ -185,7 +185,7 @@ function Game:_draw()
     end
     love.timer.sleep(nextTime - curTime)
 
-    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()))
+    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), self.cameraX, self.cameraY)
 
     love.graphics.pop()
 end

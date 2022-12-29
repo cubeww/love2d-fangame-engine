@@ -109,27 +109,16 @@ end
 
 function InstancePool:append(inst)
     local i = table.remove(self.stack)
-    if i then
+    if i ~= nil then
         self.pool[i] = inst
     else
         table.insert(self.pool, inst)
     end
+    return i or #self.pool
 end
 
-function InstancePool:findIndex(inst)
-    for i, v in ipairs(inst) do
-        if inst == v then
-            return i
-        end
-    end
-    return nil
-end
-
-function InstancePool:remove(inst)
-    local index = self:findIndex(inst)
-    if index then
-        table.insert(self.stack, index)
-    end
+function InstancePool:remove(index)
+    table.insert(self.stack, index)
 end
 
 InstancePool.iter = OrderedInstancePool.iter

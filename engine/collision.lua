@@ -202,7 +202,6 @@ function Instance:placeMeeting(object, x, y)
     for inst in object:iter(true) do
         if inst ~= self and inst.mask then
             inst:computeBoundingBox()
-
             if preciseCollision(self, inst) then
                 result = inst
                 break

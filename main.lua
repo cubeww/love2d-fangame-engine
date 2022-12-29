@@ -1,7 +1,6 @@
 require('engine.game')
 
 function love.load()
-    love.filesystem.setIdentity('scripts')
     Game:_load()
 end
 

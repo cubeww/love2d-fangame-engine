@@ -29,10 +29,12 @@ end
 
 function Instance:removeFromPools()
     local o = self.object
-    o.instancePool:remove(self)
+    o.instancePool:remove(self.poolIndex)
 
+    local i = 1
     while o do
-        o.recursiveInstancePool:remove(self)
+        o.recursiveInstancePool:remove(self.recursivePoolIndex[i])
         o = Objects[o.parentName]
+        i = i + 1
     end
 end

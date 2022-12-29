@@ -13,6 +13,9 @@ Object.extends('WarpStart', function(self)
                 p:destroy()
             end)
 
+            World.gameStarted = true
+            World.autosave = true
+            
             Game:gotoRoom(World.startRoom)
         end
     end
