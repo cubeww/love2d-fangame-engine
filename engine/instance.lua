@@ -37,4 +37,6 @@ function Instance:removeFromPools()
         o = Objects[o.parentName]
         i = i + 1
     end
+
+    SpatialHash:remove(self)
 end

@@ -108,7 +108,7 @@ Object.extends('World', function(self)
     function self:onCreate()
         self:initialize()
 
-        Sounds.musGuyRock:play()
+        -- Sounds.musGuyRock:play()
 
         Game:gotoRoom(Rooms.rTitle)
     end

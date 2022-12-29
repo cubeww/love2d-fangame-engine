@@ -280,7 +280,7 @@ Object.extends('Player', function(self)
         end
 
         -- Killer check
-        if self:placeMeeting(Objects.PlayerKiller, self.x, self.y) then
+        if self:placeMeeting(Objects.SpikeUp, self.x, self.y) then
             self:kill()
         end
     end

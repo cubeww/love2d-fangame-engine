@@ -72,7 +72,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t.transform.x = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
     y = {
@@ -81,7 +81,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t.transform.y = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
     xscale = {
@@ -90,7 +90,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t.transform.xscale = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
     yscale = {
@@ -99,7 +99,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t.transform.yscale = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
     angle = {
@@ -108,7 +108,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t.transform.angle = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
 
@@ -132,7 +132,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             if t.mask and (t.mask:getFrame(v) ~= t.mask:getFrame(t._frameIndex)) then
-                t.bbox.dirty = true
+                SpatialHash.shouldUpdateHash[t] = true
             end
             t._frameIndex = v
         end
@@ -159,7 +159,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._sprite = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
     mask = {
@@ -172,7 +172,7 @@ local objectProperties = {
         end,
         set = function(t, v)
             t._mask = v
-            t.bbox.dirty = true
+            SpatialHash.shouldUpdateHash[t] = true
         end
     },
 
@@ -255,7 +255,6 @@ function Object._new()
 
     -- Bounding box
     self.bbox = {
-        dirty = true,
         left = nil,
         right = nil,
         top = nil,
@@ -333,6 +332,9 @@ function Object:new(x, y)
         table.insert(inst.recursivePoolIndex, o.recursiveInstancePool:append(inst)) -- 3...
         o = Objects[o.parentName]
     end
+
+    SpatialHash.shouldUpdateHash[inst] = true -- 4
+    self.insertedCells = {}
 
     -- Call onCreate method
     if inst.onCreate then

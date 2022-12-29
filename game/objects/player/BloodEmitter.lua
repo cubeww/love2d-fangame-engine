@@ -13,7 +13,7 @@ Object.extends('BloodEmitter', function(self)
             Objects.Blood:new(self.x, self.y)
         end
 
-        if timer == 40 then
+        if timer == 80 then
             self:destroy()
         end
     end

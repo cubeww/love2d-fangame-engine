@@ -122,3 +122,76 @@ function InstancePool:remove(index)
 end
 
 InstancePool.iter = OrderedInstancePool.iter
+
+----------------------------------------------------------------
+
+SpatialHash = {
+    cells = {},
+    cellSize = 32,
+    shouldUpdateHash = {},
+}
+
+function SpatialHash:update()
+    for inst, _ in pairs(self.shouldUpdateHash) do
+        self:remove(inst)
+        self:insert(inst)
+        SpatialHash.shouldUpdateHash[inst] = nil
+    end
+end
+
+function SpatialHash:insert(inst)
+    inst:computeBoundingBox()
+
+    if not inst.bbox.left then
+        return
+    end
+
+    local x1 = math.floor(inst.bbox.left / self.cellSize)
+    local y1 = math.floor(inst.bbox.top / self.cellSize)
+    local x2 = math.floor(inst.bbox.right / self.cellSize)
+    local y2 = math.floor(inst.bbox.bottom / self.cellSize)
+
+    inst.insertedCells = {}
+
+    for xx = x1, x2, 1 do
+        for yy = y1, y2, 1 do
+            local pos = xx .. ',' .. yy
+            if not self.cells[pos] then
+                self.cells[pos] = {}
+            end
+
+            self.cells[pos][inst] = true --插入实例到网格中
+            table.insert(inst.insertedCells, pos)
+        end
+    end
+end
+
+function SpatialHash:remove(inst)
+    if inst.insertedCells then
+        for _, i in ipairs(inst.insertedCells) do
+            self.cells[i][inst] = nil
+        end
+    end
+end
+
+function SpatialHash:with(inst, object, func)
+    inst:computeBoundingBox()
+
+    local x1 = math.floor(inst.bbox.left / self.cellSize)
+    local y1 = math.floor(inst.bbox.top / self.cellSize)
+    local x2 = math.floor(inst.bbox.right / self.cellSize)
+    local y2 = math.floor(inst.bbox.bottom / self.cellSize)
+
+    for xx = x1, x2, 1 do
+        for yy = y1, y2, 1 do
+            local pos = xx .. ',' .. yy
+            if self.cells[pos] then
+                for inst1, _ in pairs(self.cells[pos]) do
+                    if inst1.object == object then
+                        func(inst1)
+                    end
+                end
+            end
+        end
+    end
+end

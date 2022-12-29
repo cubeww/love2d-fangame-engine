@@ -68,6 +68,8 @@ function Game:_load()
 end
 
 function Game:_update(dt)
+    XXOO = 0
+    REMOVE = 0
     nextTime = nextTime + (1 / self.roomSpeed) -- roomSpeed is defined in 'game.lua'
 
     for inst in OrderedInstancePool:iter() do
@@ -186,6 +188,16 @@ function Game:_draw()
     love.timer.sleep(nextTime - curTime)
 
     love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), self.cameraX, self.cameraY)
+    love.graphics.print('Count: ' .. tostring(XXOO), self.cameraX, self.cameraY + 16)
+
+    local count1 = 0
+    for _, value in pairs(SpatialHash.cells) do
+        for _, v1 in pairs(value) do
+            count1 = count1 + 1
+        end
+    end
+    love.graphics.print('XCount: ' .. tostring(count1), self.cameraX, self.cameraY + 32)
+    love.graphics.print('REMOVE: ' .. tostring(REMOVE), self.cameraX, self.cameraY + 48)
 
     love.graphics.pop()
 end

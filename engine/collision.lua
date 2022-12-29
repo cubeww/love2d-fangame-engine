@@ -105,12 +105,9 @@ function Transform:inversePoint(x, y)
 end
 
 -- Computes the bounding box of the instance and stores the transform state into the given transform.
+REMOVE=0
 function Instance:computeBoundingBox()
-    -- Only recalculate the collision box when the bounding box is dirty (transform is modified)
-    if not self.bbox.dirty then
-        return
-    end
-
+    REMOVE=REMOVE+1
     if not self.mask then
         return
     end
@@ -128,7 +125,6 @@ function Instance:computeBoundingBox()
         localbbox.left, localbbox.right, localbbox.top, localbbox.bottom)
 
     self.bbox.localbbox = localbbox
-    self.bbox.dirty = false
 end
 
 local function preciseCollision(inst1, inst2)
@@ -195,19 +191,19 @@ function Instance:placeMeeting(object, x, y)
     local oldX, oldY = self.x, self.y
     self.x, self.y = x, y
 
-    self:computeBoundingBox()
+    SpatialHash:update()
 
     local result = false
 
-    for inst in object:iter(true) do
-        if inst ~= self and inst.mask then
-            inst:computeBoundingBox()
+    SpatialHash:with(self, object, function(inst)
+        XXOO = XXOO + 1
+        if inst ~= self then
             if preciseCollision(self, inst) then
                 result = inst
-                break
+                return
             end
         end
-    end
+    end)
 
     self.x, self.y = oldX, oldY
     return result
