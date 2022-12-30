@@ -46,12 +46,17 @@ Instance = {}
 local objectMetatable = {
     __index = function(t, k)
         -- NB: Called only when object gets a variable that doesn't exist
-        if t._properties[k] then
-            return t._properties[k].get(t)
-        elseif rawget(t, k) then
-            return rawget(t, k)
+        local prop
+        prop = t._properties[k]
+        if prop then
+            return prop.get(t)
         else
-            return Instance[k]
+            prop = rawget(t, k)
+            if prop then
+                return prop
+            else
+                return Instance[k]
+            end
         end
     end,
     __newindex = function(t, k, v)
@@ -118,12 +123,8 @@ local objectProperties = {
             return t._depth
         end,
         set = function(t, v)
-            if not t._shouldSort then
-                OrderedInstancePool:pushSort(t)
-                t._shouldSort = true
-            end
-
             t._depth = v
+            OrderedInstancePool.instancesToSort[t] = true
         end
     },
     frameIndex = {
@@ -225,9 +226,6 @@ function Object._new()
     setmetatable(self, objectMetatable)
 
     -- Object
-    self._shouldSort = true
-    OrderedInstancePool:pushSort(self)
-
     self.visible = true
     self._depth = 0
     self.persistent = false
@@ -320,19 +318,7 @@ function Object:new(x, y)
     inst.y = y or 0
 
     -- Append to instance pools
-
-    -- We do not need to manually add to the ordered instance pool.
-    -- It will be inserted in the "sortDepth" method of the ordered instance pool.
-
-    -- OrderedInstancePool:insert(inst) -- 1
-
-    local o = self
-    inst.poolIndex = o.instancePool:append(inst) -- 2
-    inst.recursivePoolIndex = {}
-    while o do
-        table.insert(inst.recursivePoolIndex, o.recursiveInstancePool:append(inst)) -- 3...
-        o = Objects[o.parentName]
-    end
+    inst:appendToPools()
 
     -- Call onCreate method
     if inst.onCreate then

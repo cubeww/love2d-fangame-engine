@@ -9,11 +9,11 @@ Object.extends('BloodEmitter', function(self)
     function self:onUpdate()
         timer = timer + 1
 
-        for _ = 1, 40, 1 do
+        for _ = 1, 20, 1 do
             Objects.Blood:new(self.x, self.y)
         end
 
-        if timer == 40 then
+        if timer == 20 then
             self:destroy()
         end
     end

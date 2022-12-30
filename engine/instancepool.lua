@@ -7,8 +7,17 @@
 
 OrderedInstancePool = {
     pool = {},
-    sortPool = {}
+    instancesToSort = {}
 }
+
+-- Append an instance directly to the end of the pool without sorting
+function OrderedInstancePool:append(inst)
+    table.insert(self.pool, inst)
+
+    self.instancesToSort[inst] = true
+end
+
+
 -- Use binary search algorithm to quickly insert instance into the correct depth index
 function OrderedInstancePool:insert(inst)
     local left = 1
@@ -50,29 +59,20 @@ end
 
 -- Only remove the instance from this instance pool without performing any other things
 function OrderedInstancePool:remove(inst)
-    for i, v in ipairs(inst) do
-        if inst == v then
+    for i = #self.pool, 1, -1 do
+        if inst == self.pool[i] then
             table.remove(self.pool, i)
         end
     end
 end
 
--- Called when the instance depth value changes
-function OrderedInstancePool:pushSort(inst)
-    table.insert(self.sortPool, inst)
-end
-
 -- Called before drawing
 function OrderedInstancePool:sortDepth()
-    -- Pop item from sort pool
-    local inst = table.remove(self.sortPool)
-    while inst do
+    for inst, _ in pairs(self.instancesToSort) do
         self:remove(inst)
         self:insert(inst)
 
-        inst._shouldSort = false
-
-        inst = table.remove(self.sortPool)
+        self.instancesToSort[inst] = nil
     end
 end
 

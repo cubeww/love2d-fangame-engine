@@ -27,14 +27,29 @@ function Instance:destroy()
     end
 end
 
-function Instance:removeFromPools()
+function Instance:appendToPools()
+    -- Append to ordered instance pool
+    OrderedInstancePool:append(self)
+    
+    -- Append to object instance pool
     local o = self.object
-    o.instancePool:remove(self.poolIndex)
+    self._poolIndex = o.instancePool:append(self)
 
-    local i = 1
+    -- Append to recursive instance pool
+    self._recursivePoolIndexes = {}
     while o do
-        o.recursiveInstancePool:remove(self.recursivePoolIndex[i])
+        table.insert(self._recursivePoolIndexes, o.recursiveInstancePool:append(self))
         o = Objects[o.parentName]
-        i = i + 1
+    end
+end
+
+function Instance:removeFromPools()
+    -- Remove from object instance pool
+    local o = self.object
+    o.instancePool:remove(self._poolIndex)
+
+    -- Remove from recursive instance pool
+    for _, index in ipairs(self._recursivePoolIndexes) do
+        o.recursiveInstancePool:remove(index)
     end
 end

@@ -128,6 +128,8 @@ Object.extends('World', function(self)
 
         -- Function keys
         if Input:pressed('escape') then
+            -- ProFi:stop()
+            -- ProFi:writeReport('__report.txt')
             love.event.quit()
         end
         if Input:pressed('p') then

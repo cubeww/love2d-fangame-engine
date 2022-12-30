@@ -42,6 +42,8 @@ function Game:_load()
     -- Load game scripts
     requireAll('game')
 
+    -- ProFi:start('once')
+
     -- Build rooms
     for _, room in pairs(Rooms) do
         room:build()
@@ -223,8 +225,6 @@ function Game:_changeRoom(room)
             end
         end
     end
-
-    OrderedInstancePool:sortDepth()
 
     -- Call onEnterRoom method of every instance
     for inst in OrderedInstancePool:iter() do
