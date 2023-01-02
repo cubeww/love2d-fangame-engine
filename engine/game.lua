@@ -42,7 +42,10 @@ function Game:_load()
     -- Load game scripts
     requireAll('game')
 
-    -- ProFi:start('once')
+    -- Set save data folder
+    love.filesystem.setIdentity(self.name)
+
+    love.graphics.setDefaultFilter('nearest', 'nearest', 1)
 
     -- Build rooms
     for _, room in pairs(Rooms) do
@@ -51,6 +54,8 @@ function Game:_load()
 
     -- Initialize game properties
     self._newRoom = nil
+
+    self.showDebugText = false
 
     self.backgroundX = 0
     self.backgroundY = 0
@@ -63,6 +68,9 @@ function Game:_load()
     self.cameraWidth = 800
     self.cameraHeight = 608
 
+    self.windowScaleX = 1
+    self.windowScaleY = 1
+
     -- Go to start room (defined in 'game.lua')
     self:_changeRoom(Rooms[self.startRoomName])
 
@@ -72,20 +80,36 @@ end
 function Game:_update(dt)
     nextTime = nextTime + (1 / self.roomSpeed) -- roomSpeed is defined in 'game.lua'
 
-    for inst in OrderedInstancePool:iter() do
-        if inst.onUpdate then
-            inst:onUpdate()
-        end
+    if not self._newRoom then
+        for inst in OrderedInstancePool:iter() do
+            if inst.onUpdate then
+                inst:onUpdate()
+            end
 
-        inst:updatePosition()
-        inst:updateFrameIndex()
+            inst:updatePosition()
+            inst:updateFrameIndex()
+        end
     end
+
+    if not self._newRoom then
+        for inst in OrderedInstancePool:iter() do
+            if inst.onAfterUpdate then
+                inst:onAfterUpdate()
+            end
+        end
+    end
+
 end
 
 function Game:_draw()
     love.graphics.push()
 
-    love.graphics.translate(-self.cameraX, -self.cameraY)
+    love.graphics.scale(self.windowScaleX, self.windowScaleY)
+
+    local cx = math.round(self.cameraX)
+    local cy = math.round(self.cameraY)
+
+    love.graphics.translate(-cx, -cy)
 
     local bg = self.room.background
 
@@ -100,15 +124,14 @@ function Game:_draw()
     if bg.loveImage then
         if bg.mode == 'tile' then
             love.graphics.draw(bg.loveImage, bg.loveQuad,
-                -bg.width + (self.backgroundX - self.cameraX) % bg.width + self.cameraX,
-                -bg.height + (self.backgroundY - self.cameraY) % bg.height + self.cameraY)
+                -bg.width + (self.backgroundX - cx) % bg.width + cx,
+                -bg.height + (self.backgroundY - cy) % bg.height + cy)
         else
             for j = -1, 1, 1 do
                 for i = -1, 1, 1 do
                     love.graphics.draw(bg.loveImage,
-                        i * Game.displayWidth + (self.backgroundX - self.cameraX) % Game.displayWidth + self.cameraX,
-                        j * Game.displayHeight + (self.backgroundY - self.cameraY) % Game.displayHeight + self.cameraY
-                        ,
+                        i * Game.displayWidth + (self.backgroundX - cx) % Game.displayWidth + cx,
+                        j * Game.displayHeight + (self.backgroundY - cy) % Game.displayHeight + cy,
                         0,
                         Game.displayWidth / bg.width, Game.displayHeight / bg.height)
                 end
@@ -116,7 +139,7 @@ function Game:_draw()
         end
     end
 
-    -- Draw instances
+    -- Sort all instances that have not been depth-sorted
     OrderedInstancePool:sortDepth()
 
     local function drawInstance(inst)
@@ -137,6 +160,16 @@ function Game:_draw()
         end
 
     end
+
+    -- Draw instances and tiles by depth.
+    -- This part is very ugly and may be modified in the future...
+
+    -- Example: (Number is depth value)
+    -- Instances: (10) (9) (8) (5) (2)
+    -- Tile Layers: [11] [9] [6] [3]
+
+    -- Will draw:
+    -- [11] (10) [9] (9) (8) [6] (5) [3] (2)
 
     local iter = OrderedInstancePool:iter()
     local inst = iter()
@@ -174,7 +207,6 @@ function Game:_draw()
     -- Change room check
     if self._newRoom then
         self:_changeRoom(self._newRoom)
-        self._newRoom = nil
     end
 
     -- Clear input states
@@ -187,15 +219,38 @@ function Game:_draw()
     end
     love.timer.sleep(nextTime - curTime)
 
-    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), self.cameraX, self.cameraY)
-
     love.graphics.pop()
+
+    local yy = 0
+    local function debugText(text)
+        love.graphics.setColor(Color.red)
+        love.graphics.printf(text, 4, yy, 800, 'left')
+        yy = yy + 16
+        love.graphics.setColor(Color.white)
+    end
+
+    if self.showDebugText then
+        debugText('FPS: ' .. tostring(love.timer.getFPS()))
+        debugText('Memory (kB): ' .. math.floor(collectgarbage('count')))
+        debugText('Inst: ' .. #OrderedInstancePool.pool)
+
+        local pn = 0
+        for _, o in pairs(Objects) do
+            pn = pn + #o.instancePool.pool + #o.recursiveInstancePool.pool
+        end
+        debugText('PoolTotal: ' .. pn)
+    end
 end
 
+-- Enter a room immediately. For internal use only. Use Game:gotoRoom in game instead.
 function Game:_changeRoom(room)
     if not room then
         return
     end
+
+    self._newRoom = nil
+    self.cameraX = 0
+    self.cameraY = 0
 
     -- Call onExitRoom method of every instance
     for inst in OrderedInstancePool:iter() do
@@ -210,14 +265,15 @@ function Game:_changeRoom(room)
     end
 
     -- Destroy old instances
-    OrderedInstancePool:destroyAndRemoveAll()
+    OrderedInstancePool:destroyAndRemoveAll(false)
 
     -- Change current room
     self.room = room
 
     -- Create new instances
     for _, i in ipairs(room.instances) do
-        local inst = Objects[i.object]:new(i.x, i.y)
+        -- We want the instances to be sorted when creating a room instance.
+        local inst = Objects[i.object]:_insertNew(i.x, i.y, true)
         if inst then
             -- Call additional onCreate method of instance (instance creation code)
             if i.onCreate then
@@ -251,7 +307,15 @@ function Game:restartRoom()
     self._newRoom = self.room
 end
 
-function Game:restartGame()
-    require('game.game')
-    self._newRoom = Rooms[startRoomName]
+function Game:toggleFullscreen()
+    -- TODO: Keep aspect ratio in full screen
+    local isFullscreen = love.window.getFullscreen()
+    if not isFullscreen then
+        love.window.setFullscreen(true, 'desktop')
+    else
+        love.window.setFullscreen(false)
+    end
+
+    self.windowScaleX = love.graphics.getWidth() / 800
+    self.windowScaleY = love.graphics.getHeight() / 608
 end

@@ -10,7 +10,7 @@ Object.extends('FreeTrigger', function(self)
         World.trigger[self.trg] = false
     end
 
-    function self:onUpdate()
+    function self:onAfterUpdate()
         if self:placeMeeting(Objects.Player) then
             World.trigger[self.trg] = true
         end

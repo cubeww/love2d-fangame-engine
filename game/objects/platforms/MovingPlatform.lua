@@ -3,6 +3,7 @@ Object.extends('MovingPlatform', 'Platform', function(self)
     self.sprite = Sprites.sMovingPlatform
     self.mask = Same
     self.persistent = false
+    self.depth = 1
 
     self.bounce = true
 

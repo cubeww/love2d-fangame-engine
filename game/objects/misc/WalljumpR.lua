@@ -3,4 +3,5 @@ Object.extends('WalljumpR', function(self)
     self.sprite = Sprites.sWalljumpR
     self.mask = Same
     self.persistent = false
+    self.depth = 11
 end)

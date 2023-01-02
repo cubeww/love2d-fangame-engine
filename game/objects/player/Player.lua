@@ -1,26 +1,32 @@
 Object.extends('Player', function(self)
     self.visible = true
-    self.depth = -10
     self.persistent = true
     self.sprite = Sprites.sPlayerIdle
     self.mask = Sprites.sPlayerMask
+    self.depth = -10
 
     local jump = 8.5 * World.grav
     local jump2 = 7 * World.grav
     local maxSpeed = 3
     local maxVspeed = 9
     local onPlatform = false
-    local face = 1
 
     local xprevious = 0
     local yprevious = 0
 
     self.frameSpeed = 0.2
     self.frozen = false
-    self.gravity = 0.4
+    self.gravity = 0.4 * World.grav
     self.djump = 1
+    self.face = 1
 
     function self:onCreate()
+        self:setMask()
+
+        if World.gameStarted and World.difficulty == 0 then
+            Objects.Bow:new(self.x, self.y)
+        end
+
         if World.autosave then
             World:saveGame(true)
         end
@@ -60,7 +66,7 @@ Object.extends('Player', function(self)
     function self:shoot()
         if #Objects.Bullet:collect() < 4 then
             local b = Objects.Bullet:new(self.x, self.y)
-            b.hspeed = face * 16
+            b.hspeed = self.face * 16
             Sounds.sndShoot:play()
         end
     end
@@ -69,13 +75,13 @@ Object.extends('Player', function(self)
         if Game.room == Rooms.rDifficultySelect then
             self:destroy()
             Game:restartRoom()
-
             return
         end
 
         Sounds.sndDeath:play()
 
         Objects.BloodEmitter:new(self.x, self.y)
+        Objects.GameOver:new()
         self:destroy()
 
         World.death = World.death + 1
@@ -98,22 +104,50 @@ Object.extends('Player', function(self)
             end
         end
 
+        local slipBlockTouching = self:placeMeeting(Objects.SlipBlock, self.x, self.y + World.grav)
+
         -- Vine checks
-        local notOnBlock = self:placeMeeting(Objects.Block, self.x, self.y + World.grav)
+        local notOnBlock = not self:placeMeeting(Objects.Block, self.x, self.y + World.grav)
         local onVineL = self:placeMeeting(Objects.WalljumpL, self.x - 1, self.y) and notOnBlock
         local onVineR = self:placeMeeting(Objects.WalljumpR, self.x + 1, self.y) and notOnBlock
 
         if h ~= 0 then
             if not onVineL and not onVineR then
-                face = h
+                self.face = h
             end
             if (h == -1 and not onVineR) or (h == 1 and not onVineL) then
-                self.hspeed = maxSpeed * h
+                if not slipBlockTouching then
+                    self.hspeed = maxSpeed * h
+                else
+                    self.hspeed = self.hspeed + slipBlockTouching.slip * h
+
+                    if math.abs(self.hspeed) > maxSpeed then
+                        self.hspeed = maxSpeed * h
+                    end
+                end
+
                 self.sprite = Sprites.sPlayerRunning
                 self.frameSpeed = 0.5
             end
         else
-            self.hspeed = 0
+            if not slipBlockTouching then
+                self.hspeed = 0
+            else
+                if self.hspeed > 0 then
+                    self.hspeed = self.hspeed - slipBlockTouching.slip
+
+                    if self.hspeed <= 0 then
+                        self.hspeed = 0
+                    end
+                elseif self.hspeed < 0 then
+                    self.hspeed = self.hspeed + slipBlockTouching.slip
+
+                    if self.hspeed >= 0 then
+                        self.hspeed = 0
+                    end
+                end
+            end
+
             self.sprite = Sprites.sPlayerIdle
             self.frameSpeed = 0.2
         end
@@ -128,6 +162,11 @@ Object.extends('Player', function(self)
             if not self:placeMeeting(Objects.Platform, self.x, self.y + 4 * World.grav) then
                 onPlatform = false
             end
+        end
+
+        local slideBlockTouching = self:placeMeeting(Objects.SlideBlock, self.x, self.y + World.grav)
+        if slideBlockTouching then
+            self.hspeed = self.hspeed + slideBlockTouching.h
         end
 
         if math.abs(self.vspeed) > maxVspeed then
@@ -152,9 +191,9 @@ Object.extends('Player', function(self)
         -- Walljumps
         if onVineL or onVineR then
             if onVineR then
-                face = -1
+                self.face = -1
             else
-                face = 1
+                self.face = 1
             end
 
             self.vspeed = 2 * World.grav
@@ -186,12 +225,31 @@ Object.extends('Player', function(self)
         end
     end
 
-    local updatePosition = self.updatePosition
+    function self:setMask()
+        if World.grav == 1 then
+            self.mask = Sprites.sPlayerMask
+        else
+            self.mask = Sprites.sPlayerMaskFlip
+        end
+    end
 
-    function self:updatePosition()
-        -- Override the internal update position method
-        updatePosition(self)
+    function self:flipGrav()
+        World.grav = -World.grav
 
+        self.djump = 1
+        self.vspeed = 0
+
+        jump = math.abs(jump) * World.grav
+        jump2 = math.abs(jump2) * World.grav
+
+        self.gravity = math.abs(self.gravity) * World.grav
+
+        self:setMask()
+
+        self.y = self.y + 4 * World.grav
+    end
+
+    function self:onAfterUpdate()
         -- Platform check
         local platform = self:placeMeeting(Objects.Platform, self.x, self.y)
         if platform then
@@ -206,7 +264,15 @@ Object.extends('Player', function(self)
                     self.djump = 1
                 end
             else
-                -- TODO: platform flipped check
+                if self.y - self.vspeed / 2 >= platform.y + platform.frame.size.height - 1 then
+                    if platform.yspeed <= 0 then
+                        self.y = platform.y + platform.frame.size.height + 8
+                        self.vspeed = platform.yspeed
+                    end
+
+                    onPlatform = true
+                    self.djump = 1
+                end
             end
         end
 
@@ -279,13 +345,50 @@ Object.extends('Player', function(self)
             self.y = self.y + self.vspeed
         end
 
+        -- Gravity arrow check
+        if self:placeMeeting(Objects.GravityUp) then
+            if World.grav == 1 then
+                self:flipGrav()
+            end
+        end
+
+        if self:placeMeeting(Objects.GravityDown) then
+            if World.grav == -1 then
+                self:flipGrav()
+            end
+        end
+
+        -- Jump refresher check
+        local jr = self:placeMeeting(Objects.JumpRefresher)
+        if jr then
+            jr:take()
+            self.djump = 1
+        end
+
         -- Killer check
         if self:placeMeeting(Objects.PlayerKiller, self.x, self.y) then
+            self:kill()
+        end
+
+        -- Edge death
+        if self.x < 0 or self.y > Game.room.height or self.y < 0 or self.x > Game.room.width then
             self:kill()
         end
     end
 
     function self:onDraw()
-        self.sprite:draw(self.frameIndex, self.x, self.y, face, World.grav)
+        local drawY = self.y
+
+        if World.grav == -1 then
+            drawY = drawY + 1
+        end
+
+        self.sprite:draw(self.frameIndex, self.x, drawY, self.face, World.grav)
+    end
+
+    function self:onDestroy()
+        Objects.Bow:with(function(i)
+            i:destroy()
+        end)
     end
 end)

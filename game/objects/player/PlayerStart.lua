@@ -3,6 +3,7 @@ Object.extends('PlayerStart', function(self)
     self.sprite = Sprites.sPlayerStart
     self.mask = Same
     self.persistent = false
+    self.depth = -10
 
     function self:onEnterRoom()
         if not Objects.Player:first() then

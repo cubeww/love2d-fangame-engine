@@ -3,6 +3,7 @@ Object.extends('Blood', function(self)
     self.sprite = Sprites.sBlood
     self.mask = Same
     self.persistent = false
+    self.depth = -10
 
     local xprevious
     local yprevious
@@ -26,10 +27,7 @@ Object.extends('Blood', function(self)
         end
     end
 
-    local updatePosition = self.updatePosition
-    function self:updatePosition()
-        updatePosition(self)
-
+    function self:onAfterUpdate()
         if self:placeMeeting(Objects.Block, self.x, self.y) then
             self.x = xprevious
             self.y = yprevious

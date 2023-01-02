@@ -1,0 +1,1 @@
+self.itemNum=0

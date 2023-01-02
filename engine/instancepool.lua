@@ -46,10 +46,10 @@ function OrderedInstancePool:clearRemoved()
 end
 
 -- Generally called when switching rooms
-function OrderedInstancePool:destroyAndRemoveAll()
+function OrderedInstancePool:destroyAndRemoveAll(removePersistent)
     for i = #self.pool, 1, -1 do
         local inst = self.pool[i]
-        if not inst.persistent then
+        if (not inst.persistent) or (removePersistent and inst.persistent) then
             inst:destroy()
             inst:removeFromPools()
             table.remove(self.pool, i)
@@ -114,6 +114,7 @@ function InstancePool:append(inst)
     else
         table.insert(self.pool, inst)
     end
+
     return i or #self.pool
 end
 

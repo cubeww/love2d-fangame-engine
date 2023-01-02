@@ -3,4 +3,5 @@ Object.extends('Block', function(self)
     self.sprite = Sprites.sBlockMask
     self.mask = Same
     self.persistent = false
+    self.depth = 100
 end)

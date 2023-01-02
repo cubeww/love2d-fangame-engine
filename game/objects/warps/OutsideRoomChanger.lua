@@ -1,14 +1,17 @@
-Object.extends('OutsideRoomChanger', function(self)
+Object.extends('OutsideRoomChanger', 'RoomChanger', function(self)
     self.visible = true
     self.sprite = Sprites.sTriggerMask
     self.mask = Same
     self.persistent = false
+    self.depth = 10
 
-    local onUpdate = self.onUpdate
-    function self:onUpdate()
+    local onAfterUpdate = self.onAfterUpdate
+    function self:onAfterUpdate()
         Objects.Player:with(function(p)
-            if p.x < 0 or p.x > Game.room.width or p.y < 0 or p.y > Game.room.height then
-                onUpdate(self)
+            local xx = p.x + p.hspeed
+            local yy = p.y + p.vspeed
+            if xx < 0 or xx > Game.room.width or yy < 0 or yy > Game.room.height then
+                onAfterUpdate(self)
             end
         end)
     end

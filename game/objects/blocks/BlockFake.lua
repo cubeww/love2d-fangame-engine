@@ -4,7 +4,7 @@ Object.extends('BlockFake', function(self)
     self.mask = Same
     self.persistent = false
     
-    function self:onUpdate()
+    function self:onAfterUpdate()
         if self:placeMeeting(Objects.Player) then
             Sounds.sndBlockChange:play()
             self:destroy()

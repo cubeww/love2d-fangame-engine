@@ -3,14 +3,15 @@ Object.extends('RoomChanger', function(self)
     self.sprite = Sprites.sTriggerMask
     self.mask = Same
     self.persistent = false
+    self.depth = 10
 
     self.warpX = false
     self.warpY = false
     self.roomTo = World.startRoom
 
-    function self:onUpdate()
+    function self:onAfterUpdate()
         if self:placeMeeting(Objects.Player) then
-            if self.warpX ~= false and self.warpY ~= false then
+            if self.warpX == false and self.warpY == false then
                 Objects.Player:with(function(p)
                     p:destroy()
                 end)

@@ -312,6 +312,13 @@ end
 -- ******************** Object -> instance functions ********************
 
 -- Creates an instance of an object. Like instance_create() in GameMaker.
+-- New instance will execute in sequence:
+-- -> Object:_new(inst)
+--   -> Parent1:constructor(inst)
+--     -> Parent2:constructor(inst)
+--       -> ...
+--         -> Object:constructor(inst)
+--           -> Instance:onCreate(inst)
 function Object:new(x, y)
     local inst = self._new()
     inst.x = x or 0
@@ -321,6 +328,22 @@ function Object:new(x, y)
     inst:appendToPools()
 
     -- Call onCreate method
+    if inst.onCreate then
+        inst:onCreate()
+    end
+
+    return inst
+end
+
+-- Same as the function above, but 'inserted' into the order instance pool.
+-- This is typically called when creating an instance at the start of a room.
+function Object:_insertNew(x, y)
+    local inst = self._new()
+    inst.x = x or 0
+    inst.y = y or 0
+
+    inst:appendToPools(true)
+
     if inst.onCreate then
         inst:onCreate()
     end

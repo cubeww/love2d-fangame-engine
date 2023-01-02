@@ -47,8 +47,8 @@ end
 
 -- Called when speed or direction is modified
 function Instance:computeHVSpeed()
-    self._hspeed = self._speed * cos(self._direction * 0.0174532925) -- 0.0174532925 <=> pi / 180
-    self._vspeed = -self._speed * sin(self._direction * 0.0174532925)
+    self._hspeed = self._speed * cos(self._direction * pi / 180)
+    self._vspeed = -self._speed * sin(self._direction * pi / 180)
 
     -- Round if close enough
     if abs(self._hspeed - round(self._hspeed)) < 0.0001 then
@@ -80,8 +80,8 @@ function Instance:updatePosition()
 
     if self.gravity ~= 0 then
         -- Apply gravity
-        self._hspeed = self._hspeed + self.gravity * cos(self.gravityDirection * 0.0174532925)
-        self._vspeed = self._vspeed - self.gravity * sin(self.gravityDirection * 0.0174532925)
+        self._hspeed = self._hspeed + self.gravity * cos(self.gravityDirection * pi / 180)
+        self._vspeed = self._vspeed - self.gravity * sin(self.gravityDirection * pi / 180)
         self:computeSpeedDirection()
     end
 

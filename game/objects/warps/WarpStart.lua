@@ -8,15 +8,24 @@ Object.extends('WarpStart', function(self)
     self.dif = 0 -- 0=Load Game, 1=Medium, 2=Hard, 3=Very Hard, 4=Impossible
 
     function self:onUpdate()
-        if self:placeMeeting(Objects.Player) then
-            Objects.Player:with(function(p)
+        local p = self:placeMeeting(Objects.Player)
+        if p then
+            if self.dif == 4 then
+                if love.filesystem.getInfo('saveData'..World.saveNum) then
+                    World:loadGame(true)
+                else
+                    p:kill()
+                end
+            else
                 p:destroy()
-            end)
 
-            World.gameStarted = true
-            World.autosave = true
-            
-            Game:gotoRoom(World.startRoom)
+                World.gameStarted = true
+                World.autosave = true
+                World.difficulty = self.dif
+
+                Game:gotoRoom(World.startRoom)
+            end
+
         end
     end
 

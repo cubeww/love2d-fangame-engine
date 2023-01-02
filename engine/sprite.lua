@@ -163,6 +163,6 @@ function Sprite:draw(index, x, y, xscale, yscale, angle, color)
     color = color or { 1, 1, 1, 1 }
     love.graphics.setColor(color[1], color[2], color[3], color[4])
     love.graphics.draw(frame.loveImage, frame.loveQuad,
-        x, y, math.rad(angle), xscale, yscale,
+        math.round(x), math.round(y), math.rad(angle), xscale, yscale,
         frame.origin.x, frame.origin.y)
 end

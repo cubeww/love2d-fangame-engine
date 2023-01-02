@@ -27,3 +27,8 @@ end
 function love.mousereleased(_, _, button)
     Input:_released(button)
 end
+
+function love.resize(w, h)
+    Game.windowScaleX = w / 800
+    Game.windowScaleY = h / 608
+end

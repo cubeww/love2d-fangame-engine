@@ -3,10 +3,11 @@ Object.extends('Bullet', function(self)
     self.sprite = Sprites.sBullet
     self.mask = Same
     self.persistent = false
+    self.depth = -1
 
     local timer = 0
 
-    function self:onUpdate()
+    function self:onAfterUpdate()
         timer = timer + 1
 
         if timer == 40 then
@@ -14,7 +15,7 @@ Object.extends('Bullet', function(self)
             return
         end
 
-        if self:placeMeeting(Objects.Block, self.x + self.hspeed, self.y + self.vspeed) then
+        if self:placeMeeting(Objects.Block) then
             self:destroy()
             return
         end

@@ -10,7 +10,6 @@ function Room.new(roomName, contents)
     setmetatable(self, { __index = Room })
 
     self.name = roomName
-    self.size = self.size or { 800, 608 }
     self.width = self.size[1]
     self.height = self.size[2]
     self.background = self.background or {}

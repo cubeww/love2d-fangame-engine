@@ -5,7 +5,9 @@ Object.extends('BlockInvis', 'Block', function(self)
     self.persistent = false
 
     function self:onUpdate()
-        if self:placeMeeting(Objects.Player) then
+        local dist = self:distanceTo(Objects.Player)
+
+        if not self.visible and dist <= 1 then
             Sounds.sndBlockChange:play()
             self.visible = true
         end

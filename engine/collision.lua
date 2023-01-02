@@ -20,7 +20,7 @@ function Transform:prepare(xo, yo)
     self.st = 0
     self.ct = 1
     if self.angle ~= 0 then
-        local rad = self.angle * 0.0174532925 -- 0.0174532925 <=> pi / 180
+        local rad = self.angle * pi / 180
         self.st = sin(rad)
         self.ct = cos(rad)
     end
@@ -108,17 +108,17 @@ end
 function Instance:computeBoundingBox()
     -- Only recalculate the collision box when the bounding box is dirty (transform is modified)
     if not self.bbox.dirty then
-        return
+        return self.bbox
     end
 
     if not self.mask then
-        return
+        return nil
     end
 
     -- Get the local bounding box of frame
     local localbbox = self.maskFrame.bbox
     if not localbbox then
-        return
+        return nil
     end
 
     self.transform:prepare(localbbox.origin.x, localbbox.origin.y)
@@ -129,19 +129,13 @@ function Instance:computeBoundingBox()
 
     self.bbox.localbbox = localbbox
     self.bbox.dirty = false
+
+    return self.bbox
 end
 
 local function preciseCollision(inst1, inst2)
-    if not inst1.bbox or not inst2.bbox then
-        return false
-    end
-
     local localbbox1 = inst1.bbox.localbbox
     local localbbox2 = inst2.bbox.localbbox
-
-    if not localbbox1 or not localbbox2 then
-        return false
-    end
 
     -- Get bounding box intersection
     local l = max(inst1.bbox.left, inst2.bbox.left)
@@ -200,8 +194,7 @@ function Instance:placeMeeting(object, x, y)
     local result = false
 
     for inst in object:iter(true) do
-        if inst ~= self and inst.mask then
-            inst:computeBoundingBox()
+        if inst ~= self and inst:computeBoundingBox() then
             if preciseCollision(self, inst) then
                 result = inst
                 break

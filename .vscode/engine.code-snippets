@@ -9,6 +9,7 @@
             "    self.sprite = ${3:None}",
             "    self.mask = ${4:Same}",
             "    self.persistent = ${5:false}",
+            "    self.depth = ${6:0}",
             "end)"
         ],
         "description": "Extend an object"
@@ -22,17 +23,18 @@
             "    self.sprite = ${3:None}",
             "    self.mask = ${4:Same}",
             "    self.persistent = ${5:false}",
+            "    self.depth = ${6:0}",
             "    ",
             "    function self:onCreate()",
-            "        $6",
-            "    end",
-            "    ",
-            "    function self:onUpdate()",
             "        $7",
             "    end",
             "    ",
-            "    function self:onDraw()",
+            "    function self:onUpdate()",
             "        $8",
+            "    end",
+            "    ",
+            "    function self:onDraw()",
+            "        $9",
             "    end",
             "end)",
         ],
@@ -72,5 +74,21 @@
             "})",
         ],
         "description": "New a music"
+    },
+    "Object Resource": {
+        "scope": "lua",
+        "prefix": ".o",
+        "body": [
+            "Objects.",
+        ],
+        "description": "To Object Resource"
+    },
+    "Sprite Resource": {
+        "scope": "lua",
+        "prefix": ".s",
+        "body": [
+            "Sprites.s",
+        ],
+        "description": "To Sprite Resource"
     },
 }
